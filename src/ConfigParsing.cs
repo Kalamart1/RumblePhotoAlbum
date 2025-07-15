@@ -16,6 +16,8 @@ public partial class MainClass : MelonMod
     private const string picturesFolder = "pictures";
     private const string configFile = "config.json";
 
+    private const float imageOffset = 0.001f; // put the image 1mm in front of the frame
+
     /**
     * <summary>
     * Creates the necessary folders in UserData if they don't exist.
@@ -36,6 +38,7 @@ public partial class MainClass : MelonMod
     */
     private static void LoadAlbum(string sceneName)
     {
+        PicturesList = new List<PictureData>();
         string fullPath = Path.Combine(Application.dataPath, "..", UserDataPath, configFile);
 
         try
@@ -106,6 +109,15 @@ public partial class MainClass : MelonMod
                     }
 
                     GameObject obj = CreatePictureBlock(framedPicture);
+                    if (obj != null)
+                    {
+                        PictureData pictureData = new PictureData
+                        {
+                            framedPicture = framedPicture,
+                            obj = obj
+                        };
+                        PicturesList.Add(pictureData);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -294,7 +306,6 @@ public partial class MainClass : MelonMod
             framedPicture.height = (framedPicture.width - framedPicture.padding) * aspectRatio + framedPicture.padding;
         }
 
-        float imageOffset = 0.001f; // put the image 1mm in front of the frame
 
         GameObject obj = new GameObject();
         obj.transform.position = framedPicture.position;
@@ -328,8 +339,6 @@ public partial class MainClass : MelonMod
         Renderer quadRenderer = quad.GetComponent<Renderer>();
         quadRenderer.material.shader = Shader.Find("Shader Graphs/RUMBLE_Prop");
         quadRenderer.material.SetTexture("_Albedo", imageTexture);
-
-        framedPicture.obj = obj;
 
         return obj;
     }

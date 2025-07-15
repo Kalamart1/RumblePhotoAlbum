@@ -1,6 +1,7 @@
 ﻿using MelonLoader;
 using UnityEngine;
 using System.IO;
+using System.Collections.Generic;
 
 namespace RumblePhotoAlbum;
 
@@ -20,6 +21,9 @@ public partial class MainClass : MelonMod
     private static float defaultPadding = 0.01f; // Default frame padding around the picture
     private static Color defaultColor = new Color(0.48f, 0.80f, 0.76f); // Rumble gym green as default frame color
     private static GameObject photoAlbum = null; // Parent object for all framed pictures
+    private static string currentScene = "";
+
+    private static List<PictureData> PicturesList = null;
 
     /**
     * <summary>
@@ -29,7 +33,6 @@ public partial class MainClass : MelonMod
     */
     public class FramedPicture
     {
-        public GameObject obj = null;
         public string path;
         public Vector3 position;
         public Vector3 rotation;
@@ -38,6 +41,18 @@ public partial class MainClass : MelonMod
         public float padding;
         public float thickness;
         public Color color;
+    }
+
+    /**
+    * <summary>
+    * Structure of each element in the "album" field of the config file,
+    * plus the corresponding GameObject in the scene (if any)
+    * </summary>
+    */
+    public class PictureData
+    {
+        public GameObject obj = null;
+        public FramedPicture framedPicture;
     }
 
     /**
@@ -85,9 +100,51 @@ public partial class MainClass : MelonMod
     */
     public override void OnSceneWasLoaded(int buildIndex, string sceneName)
     {
-        if (sceneName!="Loader")
+        currentScene = sceneName;
+        if (sceneName != "Loader")
         {
             LoadAlbum(sceneName);
+            InitGrabbing();
+        }
+    }
+
+    /**
+     * <summary>
+     * Called 50 times per second, used for frequent updates.
+     * </summary>
+     */
+    public override void OnFixedUpdate()
+    {
+        if (currentScene != "Loader")
+        {
+            try
+            {
+                ProcessGrabbing();
+            }
+            catch (System.Exception e)
+            {
+                LogError($"Error in OnFixedUpdate: {e.Message}");
+            }
+        }
+    }
+
+    /**
+     * <summary>
+     * Called on every frame, used for updates that need to be really smooth.
+     * </summary>
+     */
+    public override void OnUpdate()
+    {
+        if (currentScene != "Loader")
+        {
+            try
+            {
+                UpdateResizingIfNeeded();
+            }
+            catch (System.Exception e)
+            {
+                LogError($"Error in OnUpdate: {e.Message}");
+            }
         }
     }
 }
