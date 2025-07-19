@@ -2,6 +2,7 @@
 using UnityEngine;
 using System.IO;
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 
 namespace RumblePhotoAlbum;
 
@@ -53,6 +54,7 @@ public partial class MainClass : MelonMod
     {
         public GameObject obj = null;
         public FramedPicture framedPicture;
+        public JToken jsonConfig = null;
     }
 
     /**
