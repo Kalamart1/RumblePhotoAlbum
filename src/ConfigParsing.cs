@@ -1,11 +1,11 @@
-using MelonLoader;
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using MelonLoader;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
-using System.Linq;
 
 namespace RumblePhotoAlbum;
 
@@ -15,8 +15,11 @@ public partial class MainClass : MelonMod
     private const string UserDataPath = "UserData/RumblePhotoAlbum";
     private const string picturesFolder = "pictures";
     private const string configFile = "config.json";
-
     private const float imageOffset = 0.001f; // put the image 1mm in front of the frame
+
+    // variables
+    private static JObject root = null;
+    private static string fullPath = Path.Combine(Application.dataPath, "..", UserDataPath, configFile);
 
     /**
     * <summary>
@@ -38,12 +41,11 @@ public partial class MainClass : MelonMod
     */
     private static void LoadAlbum(string sceneName)
     {
+        Log($"Reading from disk");
         PicturesList = new List<PictureData>();
-        string fullPath = Path.Combine(Application.dataPath, "..", UserDataPath, configFile);
 
         try
         {
-            JObject root = null;
             if (!File.Exists(fullPath))
             {
                 LogWarn($"Creating new configuration file at: {fullPath}.");
@@ -104,9 +106,9 @@ public partial class MainClass : MelonMod
                         else
                         {
                             framedPicture.path = globalPicturePath;
-                            cleanedAlbum.Add(entry);
                         }
                     }
+                    cleanedAlbum.Add(entry);
 
                     GameObject obj = CreatePictureBlock(framedPicture);
                     if (obj != null)
@@ -114,7 +116,8 @@ public partial class MainClass : MelonMod
                         PictureData pictureData = new PictureData
                         {
                             framedPicture = framedPicture,
-                            obj = obj
+                            obj = obj,
+                            jsonConfig = cleanedAlbum[cleanedAlbum.Count-1]
                         };
                         PicturesList.Add(pictureData);
                     }
@@ -383,4 +386,30 @@ public partial class MainClass : MelonMod
         return output;
     }
 
+    /**
+    * <summary>
+    * Update the json config for a picture in the album, with the new position and size.
+    * </summary>
+    */
+    private static void UpdatePictureConfig(PictureData pictureData)
+    {
+        Vector3 position = pictureData.obj.transform.position;
+        Vector3 rotation = pictureData.obj.transform.eulerAngles;
+        // Update position and rotation (overwrite with new arrays)
+        pictureData.jsonConfig["position"] = new JArray { position.x, position.y, position.z };
+        pictureData.jsonConfig["rotation"] = new JArray { rotation.x, rotation.y, rotation.z };
+
+        // Check if "height" exists, then update; otherwise update "width"
+        if (pictureData.jsonConfig["height"] != null)
+        {
+            pictureData.jsonConfig["height"] = pictureData.framedPicture.height; // or some computed value
+        }
+        else
+        {
+            pictureData.jsonConfig["width"] = pictureData.framedPicture.width; // or fallback/default
+        }
+
+        // Save full file back to disk
+        File.WriteAllText(fullPath, root.ToString(Formatting.Indented));
+    }
 }

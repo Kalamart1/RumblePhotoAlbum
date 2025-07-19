@@ -1,6 +1,7 @@
 using MelonLoader;
 using UnityEngine;
 using RumbleModdingAPI;
+using Newtonsoft.Json.Linq;
 
 namespace RumblePhotoAlbum;
 
@@ -221,7 +222,7 @@ public partial class MainClass : MelonMod
         {
             // If not holding, return to default parent
             pictureData.obj.transform.SetParent(photoAlbum.transform, true);
-            // TODO save picture new position and size on disk
+            UpdatePictureConfig(pictureData);
         }
     }
 
