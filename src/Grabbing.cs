@@ -22,7 +22,7 @@ public partial class MainClass : MelonMod
     */
     private static void InitGrabbing()
     {
-        Transform playerTr = Calls.Players.GetPlayerController().gameObject.transform.GetChild(1);
+        Transform playerTr = Calls.Players.GetPlayerController().gameObject.transform.GetChild(2);
         grip[0] = false;
         grip[1] = false;
         holding[0] = false;
