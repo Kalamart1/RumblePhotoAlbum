@@ -1,6 +1,14 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System;
+using HarmonyLib;
 using Il2CppRUMBLE.Interactions.InteractionBase;
+using Il2CppRUMBLE.Players.Subsystems;
+using Il2CppRUMBLE.Recording.LCK;
+using Il2CppRUMBLE.Serialization;
 using Il2CppRUMBLE.Tutorial.MoveLearning;
+using Il2CppRUMBLE.Utilities;
 using Il2CppTMPro;
 using MelonLoader;
 using Newtonsoft.Json.Linq;
@@ -13,6 +21,12 @@ public partial class MainClass : MelonMod
     private static GameObject AlbumInteractionItems = null;
     private static GameObject gearMarketButton = null;
     private static GameObject mailTubeObj = null;
+    private static GameObject rockCamButton = null;
+    private static Transform rockCamTf = null;
+    private static GameObject rockCamHandle = null;
+    private static PictureData rockCamPicture = null;
+    private static bool rockCamInitialized = false;
+    private static int PhotoPrintingIndex = 0;
     private static MailTube mailTube = null;
     private static GameObject mailTubeHandle = null;
     private static PictureData mailTubePicture = null;
@@ -41,6 +55,11 @@ public partial class MainClass : MelonMod
     */
     private static IEnumerator<WaitForSeconds> InitObjects()
     {
+        rockCamInitialized = false;
+        if (currentScene == "Loader")
+        {
+            yield break;
+        }
         if (currentScene == "Gym")
         {
             yield return new WaitForSeconds(5f);
@@ -54,11 +73,12 @@ public partial class MainClass : MelonMod
         {
             initializeParkObjects();
         }
+        initializeRockCam();
     }
 
     /**
     * <summary>
-    * Initializes the objects that are to be saved to DontDestroyOnLoad (used in multiple scenes)
+    * Initializes the objects that are to be saved to DontDestroyOnLoad (used in multiple scenes).
     * </summary>
     */
     public static void initializeGlobals()
@@ -66,6 +86,8 @@ public partial class MainClass : MelonMod
         AlbumInteractionItems = new GameObject();
         AlbumInteractionItems.name = "AlbumInteractionItems";
         GameObject.DontDestroyOnLoad(AlbumInteractionItems);
+
+        // get Gear Market large button
         GameObject messageScreen = GameObject.Find("--------------LOGIC--------------").transform.GetChild(3).GetChild(14).GetChild(1).gameObject;
         gearMarketButton = GameObject.Instantiate(messageScreen.transform.GetChild(1).gameObject);
         gearMarketButton.name = "gearMarketButton";
@@ -76,6 +98,58 @@ public partial class MainClass : MelonMod
         mailTubeObj.name = "mailTube";
         mailTubeObj.SetActive(false);
         mailTubeObj.transform.SetParent(AlbumInteractionItems.transform);
+
+        // get Rock Cam "flip camera" button
+        rockCamTf = Calls.Players.GetPlayerController().gameObject.transform.GetChild(10).GetChild(2);
+        rockCamButton = GameObject.Instantiate(rockCamTf.GetChild(2).GetChild(0).GetChild(1).GetChild(4).GetChild(0).gameObject);
+        rockCamButton.name = "rockCamButton";
+        rockCamButton.SetActive(false);
+        rockCamButton.transform.SetParent(AlbumInteractionItems.transform);
+    }
+
+    /**
+    * <summary>
+    * Initializes the Rock Cam print button and handle to print to.
+    * </summary>
+    */
+    public static void initializeRockCam()
+    {
+        try
+        {
+            if (rockCamInitialized || rockCamButton is null || gearMarketButton is null)
+            {
+                return;
+            }
+            var playerController = Calls.Players.GetPlayerController();
+            if (playerController is null)
+            {
+                return;
+            }
+            rockCamTf = playerController.gameObject.transform.GetChild(10).GetChild(2);
+
+            // add a "Print photo" button to the top edge of Rock Cam
+            System.Action action = () => PrintPhoto();
+            GameObject printButton = NewRockCamButton("printButton", "Print photo", action);
+            printButton.transform.SetParent(rockCamTf.GetChild(2).GetChild(0), true);
+            printButton.transform.localPosition = new Vector3(-0.08f, 0.034f, 0.143f);
+            printButton.transform.localRotation = Quaternion.Euler(new Vector3(90f, 0, 0));
+
+            // Create an inclined handle to attach "printed" pictures to (above Rock Cam)
+            rockCamHandle = new GameObject();
+            rockCamHandle.name = "printHandle";
+            rockCamHandle.transform.localScale = Vector3.one;
+            rockCamHandle.transform.SetParent(rockCamTf, true);
+            rockCamHandle.transform.localPosition = new Vector3(0.02f, 0.24f, 0.01f);
+            rockCamHandle.transform.localRotation = Quaternion.Euler(new Vector3(40, 180, 0));
+
+            // If the print button is pressed, it will print the most recent photo
+            PhotoPrintingIndex = 0;
+            rockCamInitialized = true;
+        }
+        catch (Exception e)
+        {
+            rockCamInitialized = false;
+        }
     }
 
     /**
@@ -165,15 +239,96 @@ public partial class MainClass : MelonMod
     public static GameObject NewGearMarketButton(string name, string text, System.Action action)
     {
         // Copy the object that we saved to DontDestroyOnLoad earlier
-        GameObject newButtonGO = GameObject.Instantiate(gearMarketButton);
-        newButtonGO.SetActive(true);
-        newButtonGO.name = name;
+        GameObject newButton = GameObject.Instantiate(gearMarketButton);
+        newButton.SetActive(true);
+        newButton.name = name;
         // onEndInteraction is the moment you release the button
-        newButtonGO.transform.GetChild(0).gameObject.GetComponent<InteractionTouch>().onEndInteraction.AddListener(action);
-        TextMeshPro buttonText = newButtonGO.transform.GetChild(0).GetChild(3).gameObject.GetComponent<TextMeshPro>();
+        newButton.transform.GetChild(0).gameObject.GetComponent<InteractionTouch>().onEndInteraction.AddListener(action);
+        TextMeshPro buttonText = newButton.transform.GetChild(0).GetChild(3).gameObject.GetComponent<TextMeshPro>();
         buttonText.fontSize = 0.6f;
         buttonText.m_text = text;
-        return newButtonGO;
+        return newButton;
+    }
+
+    /**
+    * <summary>
+    * Creates a copy of the "flip camera" button from Rock Cam.
+    * </summary>
+    */
+    public static GameObject NewRockCamButton(string name, string text, System.Action action)
+    {
+        // Copy the object that we saved to DontDestroyOnLoad earlier
+        GameObject newButton = GameObject.Instantiate(rockCamButton);
+        newButton.SetActive(true);
+        newButton.name = name;
+        newButton.GetComponent<InteractionButton>().onPressed.AddListener(action);
+        TextMeshPro buttonText = newButton.transform.GetChild(1).gameObject.GetComponent<TextMeshPro>();
+        buttonText.m_text = text;
+        return newButton;
+    }
+
+    /**
+    * <summary>
+    * Retrieves the N-th most recent photo, copies it to the pictures folder, and returns its file name.
+    * </summary>
+    */
+    private static string GetNthMostRecentPhoto(string sourceFolder, int n)
+    {
+        string picturesPath = Path.Combine(Application.dataPath, "..", UserDataPath, picturesFolder);
+        // order by creation time, most recent first
+        var files = Directory.GetFiles(sourceFolder, "*.*")
+                             .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg"))
+                             .OrderByDescending(File.GetCreationTime)
+                             .ToList();
+
+        if (n >= files.Count) // there aren't enough photos in the folder
+            return null;
+
+        string src = files[n];
+        string fileName = Path.GetFileName(src);
+        string dst = Path.Combine(picturesPath, fileName);
+        File.Copy(src, dst, overwrite: true);
+        return fileName;
+    }
+    public static void PrintPhoto()
+    {
+        if (rockCamPicture is not null)
+        {
+            // if the rock cam slot is still busy, ignore the button press
+            return;
+        }
+
+        RecordingConfiguration recordingConfig = Singleton<RecordingCamera>.instance.configuration;
+        LCKTabletUtility rockCamUtility = rockCamTf.gameObject.GetComponent<LCKTabletUtility>();
+        string recordingPath = Path.Combine(recordingConfig.LCKSavePath, rockCamUtility.photosFolderName);
+        string imageFile = GetNthMostRecentPhoto(recordingPath, PhotoPrintingIndex);
+        PhotoPrintingIndex++; // next time you press the buton, it will print the next photo
+        if (imageFile is null)
+        {
+            LogWarn("No photo to print");
+            return;
+        }
+
+        FramedPicture framedPicture = new FramedPicture();
+        framedPicture.path = imageFile;
+
+        // Create the json object that will be used to save the config
+        rockCamPicture = new PictureData();
+        rockCamPicture.jsonConfig = new JObject();
+        rockCamPicture.jsonConfig["path"] = framedPicture.path;
+
+        // The spawned picture will use the default size and color
+        framedPicture.padding = defaultPadding;
+        framedPicture.thickness = defaultThickness;
+        framedPicture.color = defaultColor;
+        GameObject obj = CreatePictureBlock(framedPicture, rockCamHandle.transform);
+        obj.transform.localPosition = new Vector3(0, framedPicture.height / 2, 0);
+        obj.transform.localRotation = Quaternion.Euler(Vector3.zero);
+
+        // Make the picture interactable
+        rockCamPicture.framedPicture = framedPicture;
+        rockCamPicture.obj = obj;
+        PicturesList.Add(rockCamPicture);
     }
 
     /**
@@ -264,5 +419,20 @@ public partial class MainClass : MelonMod
         yield return new WaitForSeconds(2f);
         SetPreviewSlabVisibility(true);
         animationRunning = false;
+    }
+
+    /**
+     * <summary>
+     * Harmony patch that catches the moment a photo is taken, and resets the index of the next printed photo.
+     * </summary>
+     */
+    [HarmonyPatch(typeof(LCKTabletUtility), "TakePhoto", new Type[] { })]
+    public static class PhotoTakenPatch
+    {
+        private static bool Prefix(ref LCKTabletUtility __instance)
+        {
+            PhotoPrintingIndex = 0;
+            return true;
+        }
     }
 }

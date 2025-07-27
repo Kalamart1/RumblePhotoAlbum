@@ -158,6 +158,11 @@ public partial class MainClass : MelonMod
                         mailTubePicture = null;
                         albumJson.Add(pictureData.jsonConfig);
                     }
+                    if (pictureData == rockCamPicture)
+                    {
+                        rockCamPicture = null;
+                        albumJson.Add(pictureData.jsonConfig);
+                    }
                 }
             }
             if (currentlyModified is not null)
@@ -335,6 +340,7 @@ public partial class MainClass : MelonMod
             if (Calls.Players.GetLocalPlayer() == player)
             {
                 InitGrabbing();
+                initializeRockCam();
             }
         }
     }
