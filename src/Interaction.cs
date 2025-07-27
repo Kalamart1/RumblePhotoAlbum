@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using MelonLoader;
 using Il2CppRUMBLE.Interactions.InteractionBase;
 using Il2CppRUMBLE.Tutorial.MoveLearning;
 using Il2CppTMPro;
+using MelonLoader;
 using Newtonsoft.Json.Linq;
 using RumbleModdingAPI;
 using UnityEngine;
@@ -61,7 +61,7 @@ public partial class MainClass : MelonMod
         AlbumInteractionItems = new GameObject();
         AlbumInteractionItems.name = "AlbumInteractionItems";
         GameObject.DontDestroyOnLoad(AlbumInteractionItems);
-        GameObject messageScreen = Calls.GameObjects.Gym.Scene.GymProduction.SubStaticGroupBuildings.GearMarket.MessageScreen.GetGameObject();
+        GameObject messageScreen = GameObject.Find("--------------LOGIC--------------").transform.GetChild(3).GetChild(14).GetChild(1).gameObject;
         gearMarketButton = GameObject.Instantiate(messageScreen.transform.GetChild(1).gameObject);
         gearMarketButton.name = "gearMarketButton";
         gearMarketButton.SetActive(false);
@@ -82,12 +82,12 @@ public partial class MainClass : MelonMod
         mailTubePicture = null;
 
         //Get the mail tube object in the gym
-        mailTube = Calls.GameObjects.Gym.Scene.GymProduction.SubStaticGroupBuildings.GearMarket.MailTube.GetGameObject().GetComponent<MailTube>();
+        mailTube = GameObject.Find("--------------LOGIC--------------").transform.GetChild(3).GetChild(14).GetChild(6).gameObject.GetComponent<MailTube>();
 
         // Create a new button on the gear market for spawning pictures
         System.Action action = () => SpawnPicture();
         GameObject spawnButton = NewGearMarketButton("spawnButton", "Spawn picture", action);
-        GameObject gearMarket = Calls.GameObjects.Gym.Scene.GymProduction.SubStaticGroupBuildings.GearMarket.GetGameObject();
+        GameObject gearMarket = GameObject.Find("--------------LOGIC--------------").transform.GetChild(3).GetChild(14).gameObject;
         spawnButton.transform.SetParent(gearMarket.transform);
         spawnButton.transform.localPosition = new Vector3(0.075f, 1.1f, 0.19f);
         spawnButton.transform.localRotation = Quaternion.Euler(new Vector3(270, 270, 0));
