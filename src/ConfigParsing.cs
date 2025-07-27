@@ -94,25 +94,10 @@ public partial class MainClass : MelonMod
                     if (framedPicture is null)
                         continue;
 
-                    if (!File.Exists(framedPicture.path))
-                    {
-                        // if the path is not absolute, assume it's relative to the pictures folder
-                        string globalPicturePath = Path.Combine(Application.dataPath, "..", UserDataPath, picturesFolder, framedPicture.path);
-                        if (!File.Exists(globalPicturePath))
-                        {
-                            LogWarn($"Removed missing file: {framedPicture.path}");
-                            continue;
-                        }
-                        else
-                        {
-                            framedPicture.path = globalPicturePath;
-                        }
-                    }
-                    cleanedAlbum.Add(entry);
-
-                    GameObject obj = CreatePictureBlock(framedPicture);
+                    GameObject obj = CreatePictureBlock(framedPicture, photoAlbum.transform);
                     if (obj != null)
                     {
+                        cleanedAlbum.Add(entry);
                         PictureData pictureData = new PictureData
                         {
                             framedPicture = framedPicture,
@@ -120,6 +105,10 @@ public partial class MainClass : MelonMod
                             jsonConfig = cleanedAlbum[cleanedAlbum.Count-1]
                         };
                         PicturesList.Add(pictureData);
+                    }
+                    else
+                    {
+                        LogWarn($"Removed missing file: {framedPicture.path}");
                     }
                 }
                 catch (Exception ex)
@@ -214,7 +203,7 @@ public partial class MainClass : MelonMod
         // Optional fields with defaults
         framedPicture.width = obj.Value<float?>("width") ?? 0;
         framedPicture.height = obj.Value<float?>("height") ?? 0;
-        framedPicture.padding = 2 * (obj.Value<float?>("padding") ?? defaultPadding);
+        framedPicture.padding = obj.Value<float?>("padding") ?? defaultPadding;
         framedPicture.thickness = obj.Value<float?>("thickness") ?? defaultThickness;
 
         framedPicture.color = defaultColor; // Default color
@@ -283,11 +272,25 @@ public partial class MainClass : MelonMod
     * Creates the GameObject for a framed picture in the scene.
     * </summary>
     */
-    private static GameObject CreatePictureBlock(FramedPicture framedPicture)
+    private static GameObject CreatePictureBlock(FramedPicture framedPicture, Transform parent)
     {
+        if (!File.Exists(framedPicture.path))
+        {
+            // if the path is not absolute, assume it's relative to the pictures folder
+            string globalPicturePath = Path.Combine(Application.dataPath, "..", UserDataPath, picturesFolder, framedPicture.path);
+            if (!File.Exists(globalPicturePath))
+            {
+                return null; // File does not exist, cannot create picture block
+            }
+            else
+            {
+                framedPicture.path = globalPicturePath;
+            }
+        }
+
         // Load texture from image file, with the frame's color as background
-        Texture2D imageTexture = LoadFlattenedTexture(framedPicture.path, framedPicture.color);
-        
+        Texture2D imageTexture = LoadTexture(framedPicture.path, framedPicture.color);
+
         float aspectRatio = (float)imageTexture.height / imageTexture.width;
         if (framedPicture.width == 0 && framedPicture.height == 0)
         {
@@ -302,19 +305,19 @@ public partial class MainClass : MelonMod
         }
         if (framedPicture.width == 0)
         {
-            framedPicture.width = (framedPicture.height - framedPicture.padding) / aspectRatio + framedPicture.padding;
+            framedPicture.width = (framedPicture.height - 2*framedPicture.padding) / aspectRatio + 2*framedPicture.padding;
         }
         else
         {
-            framedPicture.height = (framedPicture.width - framedPicture.padding) * aspectRatio + framedPicture.padding;
+            framedPicture.height = (framedPicture.width - 2*framedPicture.padding) * aspectRatio + 2*framedPicture.padding;
         }
 
 
         GameObject obj = new GameObject();
-        obj.transform.position = framedPicture.position;
-        obj.transform.rotation = Quaternion.Euler(framedPicture.rotation);
         obj.name = $"PictureBlock: {Path.GetFileNameWithoutExtension(framedPicture.path)}";
-        obj.transform.SetParent(photoAlbum.transform, true);
+        obj.transform.SetParent(parent, false);
+        obj.transform.localPosition = framedPicture.position;
+        obj.transform.localRotation = Quaternion.Euler(framedPicture.rotation);
 
         // Create frame
         GameObject frame = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -331,8 +334,8 @@ public partial class MainClass : MelonMod
         GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
         quad.name = "picture";
         quad.transform.SetParent(obj.transform, false);
-        quad.transform.localScale = new Vector3(framedPicture.width - framedPicture.padding,
-                                                 framedPicture.height - framedPicture.padding,
+        quad.transform.localScale = new Vector3(framedPicture.width - 2*framedPicture.padding,
+                                                 framedPicture.height - 2*framedPicture.padding,
                                                  1f);
 
         // Picture positioned 1mm in front of the frame (local +Z)
@@ -344,6 +347,22 @@ public partial class MainClass : MelonMod
         quadRenderer.material.SetTexture("_Albedo", imageTexture);
 
         return obj;
+    }
+
+    /**
+    * <summary>
+    * Create a Texture2D from an image file, blending it on top of a predetermined
+    * color in order to remove alpha transparency. This way it looks like it has
+    * transparency when superposed on top of a colored background.
+    * </summary>
+    */
+    public static Texture2D LoadTexture(string path, Color background)
+    {
+        // Load image into Texture2D with alpha channel
+        byte[] data = File.ReadAllBytes(path);
+        Texture2D output = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+        output.LoadImage(data);
+        return output;
     }
 
     /**

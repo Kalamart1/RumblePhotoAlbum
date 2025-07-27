@@ -151,6 +151,11 @@ public partial class MainClass : MelonMod
                     holding[index] = true;
                     dst_min = dst;
                     currentlyModified = pictureData; // Update currently modified picture
+                    if (pictureData==mailTubePicture)
+                    {
+                        mailTubePicture = null;
+                        albumJson.Add(pictureData.jsonConfig);
+                    }
                 }
             }
             if (currentlyModified is not null)
@@ -296,7 +301,7 @@ public partial class MainClass : MelonMod
         float aspectRatio = quad.localScale.y / quad.localScale.x;
 
         // the width of the image is imposed by the width of the frame
-        float localQuadWidth = frame.localScale.x - framedPicture.padding / scale;
+        float localQuadWidth = frame.localScale.x - 2*framedPicture.padding / scale;
         // the height is imposed by the aspect ratio of the image
         quad.localScale = new Vector3(localQuadWidth,
                                       localQuadWidth*aspectRatio,
@@ -304,7 +309,7 @@ public partial class MainClass : MelonMod
 
         // the frame's width is set by resizing, but the height follows the image's height
         frame.localScale = new Vector3(frame.localScale.x,
-                                        quad.localScale.y + framedPicture.padding/scale,
+                                        quad.localScale.y + 2*framedPicture.padding/scale,
                                         framedPicture.thickness/scale);
 
         framedPicture.width = frame.localScale.x * scale;

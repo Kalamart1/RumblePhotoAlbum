@@ -1,8 +1,9 @@
-﻿using MelonLoader;
-using UnityEngine;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
-using System.Collections.Generic;
+using MelonLoader;
 using Newtonsoft.Json.Linq;
+using UnityEngine;
 
 namespace RumblePhotoAlbum;
 
@@ -39,9 +40,9 @@ public partial class MainClass : MelonMod
         public Vector3 rotation;
         public float width = 0;
         public float height = 0;
-        public float padding;
+        public float padding = defaultPadding;
         public float thickness;
-        public Color color;
+        public Color color = defaultColor;
     }
 
     /**
@@ -108,6 +109,7 @@ public partial class MainClass : MelonMod
             LoadAlbum(sceneName);
             InitGrabbing();
         }
+        initializeInteractionObjects();
     }
 
     /**
