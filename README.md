@@ -12,9 +12,20 @@ Simply drop the images you want into `UserData/RumblePhotoAlbum/pictures`, and p
 
 The configuration is saved in a json file, and each scene gets its own configuration. The only scene that cannot have framed pictures is the Loader.
 
-In a future iteration of the mod, the park will also feature a copy of the Mail Tube and the "Spawn picture" button.
+The park also features a copy of the Mail Tube and the "Spawn picture" button.
 
 For multiplayer maps, there can't be extra stuff on the arena, so you'll have to experiment by manually editing the json file...
+
+## Rock Cam integration
+You can print photos from your Rock Cam!
+
+After taking a photo, press the "Print photo" button on the top of your cam, and a printed version will be spawned, attached to the camera!
+
+If you press move the photo and press the button again, an older photo will be printed, until you run out of photos to print. But if you take a photo in the meantime, it will print the most recent photo again.
+
+You don't have to stay in the same scene to print, you can do it at any moment. The image file is copied to the UserData subfolder, so it's available in the stash for all scenes.
+
+!["Print photo" button](img/printPhoto.png)
 
 ## Reloading all the pictures currently in the scene
 Any time the mod configuration in ModUI is saved, all the pictures are reloaded. You can experiment with the color and size options to get the best fit for you while you're at it!
