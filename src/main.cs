@@ -109,6 +109,10 @@ public partial class MainClass : MelonMod
             LoadAlbum(sceneName);
             InitGrabbing();
         }
+        if (sceneName != "Gym")
+        {
+            InitModUI();
+        }
         initializeInteractionObjects();
     }
 

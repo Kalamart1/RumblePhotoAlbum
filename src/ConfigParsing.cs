@@ -263,12 +263,23 @@ public partial class MainClass : MelonMod
         else if (token.Type == JTokenType.String)
         {
             string hex = token.ToString();
-            if (ColorUtility.TryParseHtmlString(hex, out Color color))
-            {
-                return color;
-            }
+            return Hex2Color(hex);
         }
 
+        throw new ArgumentException("FramedPicture: 'color' must be [r,g,b,a?] or hex string.");
+    }
+
+    /**
+    * <summary>
+    * Parses a hex string as a color.
+    * </summary>
+    */
+    private static Color Hex2Color(string hex)
+    {
+        if (ColorUtility.TryParseHtmlString(hex, out Color color))
+        {
+            return color;
+        }
         throw new ArgumentException("FramedPicture: 'color' must be [r,g,b,a?] or hex string.");
     }
 

@@ -49,6 +49,9 @@
     <Reference Include="RumbleModdingAPI">
       <HintPath>Z:\RUMBLE\RUMBLE_install\Mods\RumbleModdingAPI.dll</HintPath>
     </Reference>
+    <Reference Include="ModUI">
+      <HintPath>Z:\RUMBLE\RUMBLE_install\Mods\ModUI.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.TextMeshPro, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Z:\RUMBLE\RUMBLE_install\MelonLoader\Il2CppAssemblies\Unity.TextMeshPro.dll</HintPath>
