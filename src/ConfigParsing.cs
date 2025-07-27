@@ -59,26 +59,15 @@ public partial class MainClass : MelonMod
 
 
             // if the field with this scen name doesn't exist, create it
-            if (!root.TryGetValue(sceneName, out JToken sceneToken) || sceneToken.Type != JTokenType.Object)
+            if (!root.TryGetValue(sceneName, out JToken sceneObj) || sceneObj.Type != JTokenType.Object)
             {
                 LogWarn($"No valid entry found for scene \"{sceneName}\". Creating an empty object.");
-                sceneToken = new JObject();
-                root[sceneName] = sceneToken;
+                sceneObj = new JObject();
+                root[sceneName] = sceneObj;
             }
 
-            var sceneObj = (JObject)sceneToken;
 
-            // Ensure "stash" and "album" exist
-            JArray stash = sceneObj["stash"] as JArray ?? new JArray();
             JArray album = sceneObj["album"] as JArray ?? new JArray();
-
-
-            // Normalize paths in JSON to match disk
-            HashSet<string> stashSet = new(stash.Select(s => s.ToString()));
-            HashSet<string> albumSet = new(album
-                .Where(e => e["path"] != null)
-                .Select(e => e["path"].ToString())
-            );
 
             photoAlbum = new GameObject();
             photoAlbum.name = "PhotoAlbum";
@@ -118,51 +107,7 @@ public partial class MainClass : MelonMod
                 }
             }
 
-
-            // Validate stash entries
-            var cleanedStash = new HashSet<string>();
-            foreach (var entry in stash)
-            {
-                string picturePath = entry.ToString();
-                if (!File.Exists(picturePath))
-                {
-                    // if the path is not absolute, assume it's relative to the pictures folder
-                    string globalPicturePath = Path.Combine(Application.dataPath, "..", UserDataPath, picturesFolder, picturePath);
-                    if (!File.Exists(globalPicturePath))
-                    {
-                        LogWarn($"Removed missing file from stash: {picturePath}");
-                        continue;
-                    }
-                    cleanedStash.Add(picturePath);
-                }
-            }
-
-            // Get the list of images that are currently used in the album and/or stash
-            var usedImages = new HashSet<string>(cleanedStash);
-            usedImages.UnionWith(albumSet);
-
-            // Check all image files in the "pictures" folder
-            string picturesPath = Path.Combine(Application.dataPath, "..", UserDataPath, picturesFolder);
-            var imageFiles = new HashSet<string>(
-                Directory.Exists(picturesPath)
-                    ? Directory.GetFiles(picturesPath)
-                              .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg"))
-                              .Select(f => f)
-                    : Enumerable.Empty<string>()
-            );
-
-            foreach (var file in imageFiles)
-            {
-                string fileName = Path.GetFileName(file);
-                if (!usedImages.Contains(fileName))
-                {
-                    cleanedStash.Add(fileName);
-                    Log($"Adding missing image {fileName} to stash.");
-                }
-            }
-
-            // Rebuild updated stash/album
-            sceneObj["stash"] = new JArray(cleanedStash);
+            reloadStash();
             sceneObj["album"] = cleanedAlbum;
 
             // Save back the modified config
@@ -172,6 +117,67 @@ public partial class MainClass : MelonMod
         {
             LogError($"Failed to load or parse {configFile}: {ex.Message}");
         }
+    }
+
+    /**
+    * <summary>
+    * Reloads the stash accordingly to what's in the "pictures" folder.
+    * </summary>
+    */
+    private static void reloadStash()
+    {
+        JObject sceneObj = (JObject)root[currentScene];
+        JArray stash = (JArray)sceneObj["stash"] ?? new JArray();
+        JArray album = sceneObj["album"] as JArray ?? new JArray();
+        HashSet<string> albumSet = new(album
+                .Where(e => e["path"] != null)
+                .Select(e => e["path"].ToString())
+            );
+
+        // Validate stash entries
+        var cleanedStash = new HashSet<string>();
+        foreach (var entry in stash)
+        {
+            string picturePath = entry.ToString();
+            if (!File.Exists(picturePath))
+            {
+                // if the path is not absolute, assume it's relative to the pictures folder
+                string globalPicturePath = Path.Combine(Application.dataPath, "..", UserDataPath, picturesFolder, picturePath);
+                if (!File.Exists(globalPicturePath))
+                {
+                    LogWarn($"Removed missing file from stash: {picturePath}");
+                    continue;
+                }
+                cleanedStash.Add(picturePath);
+            }
+        }
+
+        // Get the list of images that are currently used in the album and/or stash
+        var usedImages = new HashSet<string>(cleanedStash);
+        usedImages.UnionWith(albumSet);
+
+        // Check all image files in the "pictures" folder
+        string picturesPath = Path.Combine(Application.dataPath, "..", UserDataPath, picturesFolder);
+        var imageFiles = new HashSet<string>(
+            Directory.Exists(picturesPath)
+                ? Directory.GetFiles(picturesPath)
+                          .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg"))
+                          .Select(f => f)
+                : Enumerable.Empty<string>()
+        );
+
+        foreach (var file in imageFiles)
+        {
+            string fileName = Path.GetFileName(file);
+            if (!usedImages.Contains(fileName))
+            {
+                cleanedStash.Add(fileName);
+                Log($"Adding missing image {fileName} to stash.");
+            }
+        }
+
+        // Rebuild updated stash/album
+        sceneObj["stash"] = new JArray(cleanedStash);
     }
 
     /**

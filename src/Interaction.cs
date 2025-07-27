@@ -134,6 +134,9 @@ public partial class MainClass : MelonMod
             // if the mail tube is still busy, ignore the button press
             return;
         }
+        // reload the stash in case other pictures were added to the folder
+        reloadStash();
+        stashJson = (JArray)root[currentScene]["stash"];
         if (stashJson is not null && stashJson.Count == 0)
         {
             LogWarn("No pictures in stash, cannot spawn new picture");
