@@ -107,7 +107,6 @@ public partial class MainClass : MelonMod
         if (sceneName != "Loader")
         {
             LoadAlbum(sceneName);
-            InitGrabbing();
         }
         if (sceneName == "Loader")
         {

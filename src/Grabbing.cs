@@ -2,6 +2,8 @@ using MelonLoader;
 using UnityEngine;
 using RumbleModdingAPI;
 using Newtonsoft.Json.Linq;
+using HarmonyLib;
+using Il2CppRUMBLE.Players;
 
 namespace RumblePhotoAlbum;
 
@@ -320,4 +322,21 @@ public partial class MainClass : MelonMod
         // move the image quad to the front
         quad.transform.localPosition = new Vector3(0f, 0f, -imageOffset / scale);
     }
+    /**
+    * <summary>
+    * Harmony patch that is called when the local player is initialized
+    * </summary>
+    */
+    [HarmonyPatch(typeof(PlayerController), "Initialize", new System.Type[] { typeof(Player) })]
+    public static class playerspawn
+    {
+        private static void Postfix(ref PlayerController __instance, ref Player player)
+        {
+            if (Calls.Players.GetLocalPlayer() == player)
+            {
+                InitGrabbing();
+            }
+        }
+    }
+
 }
