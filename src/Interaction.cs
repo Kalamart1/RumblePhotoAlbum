@@ -12,6 +12,7 @@ public partial class MainClass : MelonMod
 {
     private static GameObject AlbumInteractionItems = null;
     private static GameObject gearMarketButton = null;
+    private static GameObject mailTubeObj = null;
     private static MailTube mailTube = null;
     private static GameObject mailTubeHandle = null;
     private static PictureData mailTubePicture = null;
@@ -49,6 +50,10 @@ public partial class MainClass : MelonMod
             }
             initializeGymObjects();
         }
+        else if (currentScene == "Park")
+        {
+            initializeParkObjects();
+        }
     }
 
     /**
@@ -66,6 +71,11 @@ public partial class MainClass : MelonMod
         gearMarketButton.name = "gearMarketButton";
         gearMarketButton.SetActive(false);
         gearMarketButton.transform.SetParent(AlbumInteractionItems.transform);
+
+        mailTubeObj = GameObject.Instantiate(GameObject.Find("--------------LOGIC--------------").transform.GetChild(3).GetChild(14).GetChild(6).gameObject);
+        mailTubeObj.name = "mailTube";
+        mailTubeObj.SetActive(false);
+        mailTubeObj.transform.SetParent(AlbumInteractionItems.transform);
     }
 
     /**
@@ -75,12 +85,6 @@ public partial class MainClass : MelonMod
     */
     public static void initializeGymObjects()
     {
-        // reset state variables
-        animationRunning = false;
-        stashJson = (JArray)root[currentScene]["stash"];
-        albumJson = (JArray)root[currentScene]["album"];
-        mailTubePicture = null;
-
         //Get the mail tube object in the gym
         mailTube = GameObject.Find("--------------LOGIC--------------").transform.GetChild(3).GetChild(14).GetChild(6).gameObject.GetComponent<MailTube>();
 
@@ -92,6 +96,44 @@ public partial class MainClass : MelonMod
         spawnButton.transform.localPosition = new Vector3(0.075f, 1.1f, 0.19f);
         spawnButton.transform.localRotation = Quaternion.Euler(new Vector3(270, 270, 0));
 
+        initializeMailTubeObjects();
+    }
+
+    /**
+    * <summary>
+    * Initializes the objects that are specific to the Park scene.
+    * </summary>
+    */
+    public static void initializeParkObjects()
+    {
+        //Copy the mail tube object that comes from the gym
+        mailTube = NewMailTube().GetComponent<MailTube>();
+        mailTube.gameObject.name = "mailTube";
+        mailTube.transform.position = new Vector3(-13.3f, -5.88f, 4.71f);
+        mailTube.transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
+
+        // Create a new button on the gear market for spawning pictures
+        System.Action action = () => SpawnPicture();
+        GameObject spawnButton = NewGearMarketButton("spawnButton", "Spawn picture", action);
+        spawnButton.transform.position = new Vector3(-13.19f, -4.68f, 5.42f);
+        spawnButton.transform.rotation = Quaternion.Euler(new Vector3(-90, 35, 0));
+
+        initializeMailTubeObjects();
+    }
+
+    /**
+    * <summary>
+    * Initializes all the objects that are needed for the mail tube to work for delivering pictures.
+    * </summary>
+    */
+    public static void initializeMailTubeObjects()
+    {
+        // reset state variables
+        animationRunning = false;
+        stashJson = (JArray)root[currentScene]["stash"];
+        albumJson = (JArray)root[currentScene]["album"];
+        mailTubePicture = null;
+
         // Initialize transforms for positioning the picture during the animation
         purchaseSlab = mailTube.gameObject.transform.GetChild(5);
         mailTubeHandle = new GameObject();
@@ -100,6 +142,19 @@ public partial class MainClass : MelonMod
         mailTubeHandle.transform.SetParent(purchaseSlab, true);
         mailTubeHandle.transform.localPosition = Vector3.zero;
         mailTubeHandle.transform.localRotation = Quaternion.Euler(Vector3.zero);
+    }
+
+    /**
+    * <summary>
+    * Creates a copy of the Mail Tube on the Gear Market.
+    * </summary>
+    */
+    public static GameObject NewMailTube()
+    {
+        // Copy the object that we saved to DontDestroyOnLoad earlier
+        GameObject newMailTube = GameObject.Instantiate(mailTubeObj);
+        newMailTube.SetActive(true);
+        return newMailTube;
     }
 
     /**
