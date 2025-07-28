@@ -1,3 +1,6 @@
+# Version 1.0.1
+- Fixed collisions with the pictures
+
 # Version 1.0.0
 - Created
 

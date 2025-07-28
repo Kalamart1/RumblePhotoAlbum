@@ -308,6 +308,8 @@ public partial class MainClass : MelonMod
         // Load texture from image file, with the frame's color as background
         Texture2D imageTexture = LoadTexture(framedPicture.path, framedPicture.color);
 
+        int pictureLayer = LayerMask.NameToLayer("UI"); // No collision
+
         float aspectRatio = (float)imageTexture.height / imageTexture.width;
         if (framedPicture.width == 0 && framedPicture.height == 0)
         {
@@ -331,6 +333,7 @@ public partial class MainClass : MelonMod
 
 
         GameObject obj = new GameObject();
+        obj.layer = pictureLayer;
         obj.name = $"PictureBlock: {Path.GetFileNameWithoutExtension(framedPicture.path)}";
         obj.transform.SetParent(parent, false);
         obj.transform.localPosition = framedPicture.position;
@@ -338,6 +341,7 @@ public partial class MainClass : MelonMod
 
         // Create frame
         GameObject frame = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        frame.layer = pictureLayer;
         frame.name = "frame";
         frame.transform.SetParent(obj.transform, false);
         frame.transform.localScale = new Vector3(framedPicture.width, framedPicture.height, framedPicture.thickness);
@@ -349,6 +353,7 @@ public partial class MainClass : MelonMod
 
         // Create quad with the image on it
         GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        quad.layer = pictureLayer;
         quad.name = "picture";
         quad.transform.SetParent(obj.transform, false);
         quad.transform.localScale = new Vector3(framedPicture.width - 2*framedPicture.padding,
