@@ -138,9 +138,9 @@ public partial class MainClass : MelonMod
             rockCamHandle = new GameObject();
             rockCamHandle.name = "printHandle";
             rockCamHandle.transform.localScale = Vector3.one;
-            rockCamHandle.transform.SetParent(rockCamTf, true);
-            rockCamHandle.transform.localPosition = new Vector3(0.02f, 0.24f, 0.01f);
-            rockCamHandle.transform.localRotation = Quaternion.Euler(new Vector3(40, 180, 0));
+            rockCamHandle.transform.SetParent(rockCamTf.GetChild(2).GetChild(0), true);
+            rockCamHandle.transform.localPosition = new Vector3(0, 0.079f, 0.22f);
+            rockCamHandle.transform.localRotation = Quaternion.Euler(new Vector3(-50, 180, 0));
 
             // If the print button is pressed, it will print the most recent photo
             PhotoPrintingIndex = 0;
