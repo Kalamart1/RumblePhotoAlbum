@@ -215,6 +215,8 @@ public partial class MainClass : MelonMod
         if (obj.TryGetValue("color", out JToken colorToken))
             framedPicture.color = ParseColor(colorToken);
 
+        framedPicture.alpha = obj.Value<bool?>("alpha") ?? enableAlpha;
+
         return framedPicture;
     }
 
@@ -305,7 +307,15 @@ public partial class MainClass : MelonMod
         }
 
         // Load texture from image file, with the frame's color as background
-        Texture2D imageTexture = LoadTexture(framedPicture.path, framedPicture.color);
+        Texture2D imageTexture = null;
+        if (framedPicture.alpha)
+        {
+            imageTexture = LoadFlattenedTexture(framedPicture.path, framedPicture.color);
+        }
+        else
+        {
+            imageTexture = LoadTexture(framedPicture.path, framedPicture.color);
+        }
 
         int pictureLayer = LayerMask.NameToLayer("UI"); // No collision
 
