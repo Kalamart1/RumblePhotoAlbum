@@ -204,8 +204,6 @@ public partial class MainClass : MelonMod
     {
         // reset state variables
         animationRunning = false;
-        stashJson = (JArray)root[currentScene]["stash"];
-        albumJson = (JArray)root[currentScene]["album"];
         mailTubePicture = null;
 
         // Initialize transforms for positioning the picture during the animation

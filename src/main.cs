@@ -104,14 +104,17 @@ public partial class MainClass : MelonMod
     public override void OnSceneWasLoaded(int buildIndex, string sceneName)
     {
         currentScene = sceneName;
+        if (sceneName == "Loader")
+        {
+            InitModUI();
+            return;
+        }
         if (sceneName != "Loader")
         {
             LoadAlbum(sceneName);
         }
-        if (sceneName == "Loader")
-        {
-            InitModUI();
-        }
+        stashJson = (JArray)root[currentScene]["stash"];
+        albumJson = (JArray)root[currentScene]["album"];
         initializeInteractionObjects();
     }
 

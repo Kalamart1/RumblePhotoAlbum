@@ -172,7 +172,6 @@ public partial class MainClass : MelonMod
             if (!usedImages.Contains(fileName))
             {
                 cleanedStash.Add(fileName);
-                Log($"Adding missing image {fileName} to stash.");
             }
         }
 
