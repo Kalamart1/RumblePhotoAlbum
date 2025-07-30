@@ -1,3 +1,8 @@
+# Version 1.0.3
+- Fixed picture positions not being saved in matches
+- Made the printed photo disappear with Rock Cam if it's still attached
+- Added an option to enable transparency
+
 # Version 1.0.2
 - Fixed the mod for v0.4.2
 - Fixed picture grabbing in parks
