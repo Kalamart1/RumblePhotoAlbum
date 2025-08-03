@@ -1,3 +1,8 @@
+# Version 1.0.4
+- Fixed initialization failing in some situations
+- Fixed Rock Cam button being unresponsive after scene change
+- Fixed collision glitch with the picture when too big
+
 # Version 1.0.3
 - Fixed picture positions not being saved in matches
 - Made the printed photo disappear with Rock Cam if it's still attached
