@@ -88,13 +88,13 @@ public partial class MainClass : MelonMod
         GameObject.DontDestroyOnLoad(AlbumInteractionItems);
 
         // get Gear Market large button
-        GameObject messageScreen = GameObject.Find("--------------LOGIC--------------").transform.GetChild(3).GetChild(14).GetChild(1).gameObject;
-        gearMarketButton = GameObject.Instantiate(messageScreen.transform.GetChild(1).gameObject);
+        gearMarketButton = GameObject.Instantiate(Calls.GameObjects.Gym.LOGIC.Heinhouserproducts.Gearmarket.Messagescreen.OneButtonLayout.GetGameObject());
         gearMarketButton.name = "gearMarketButton";
         gearMarketButton.SetActive(false);
         gearMarketButton.transform.SetParent(AlbumInteractionItems.transform);
 
-        mailTubeObj = GameObject.Instantiate(GameObject.Find("--------------LOGIC--------------").transform.GetChild(3).GetChild(14).GetChild(6).gameObject);
+        //Get the mail tube object in the gym
+        mailTubeObj = GameObject.Instantiate(Calls.GameObjects.Gym.LOGIC.Heinhouserproducts.Gearmarket.MailTube.GetGameObject());
         mailTubeObj.name = "mailTube";
         mailTubeObj.SetActive(false);
         mailTubeObj.transform.SetParent(AlbumInteractionItems.transform);
@@ -160,12 +160,12 @@ public partial class MainClass : MelonMod
     public static void initializeGymObjects()
     {
         //Get the mail tube object in the gym
-        mailTube = GameObject.Find("--------------LOGIC--------------").transform.GetChild(3).GetChild(14).GetChild(6).gameObject.GetComponent<MailTube>();
+        mailTube = Calls.GameObjects.Gym.LOGIC.Heinhouserproducts.Gearmarket.MailTube.GetGameObject().GetComponent<MailTube>();
 
         // Create a new button on the gear market for spawning pictures
         System.Action action = () => SpawnPicture();
         GameObject spawnButton = NewGearMarketButton("spawnButton", "Spawn picture", action);
-        GameObject gearMarket = GameObject.Find("--------------LOGIC--------------").transform.GetChild(3).GetChild(14).gameObject;
+        GameObject gearMarket = Calls.GameObjects.Gym.LOGIC.Heinhouserproducts.Gearmarket.GetGameObject();
         spawnButton.transform.SetParent(gearMarket.transform);
         spawnButton.transform.localPosition = new Vector3(0.075f, 1.1f, 0.19f);
         spawnButton.transform.localRotation = Quaternion.Euler(new Vector3(270, 270, 0));
