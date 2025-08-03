@@ -115,6 +115,7 @@ public partial class MainClass : MelonMod
             {
                 return;
             }
+            rockCamPicture = null;
             rockCamTf = playerController.gameObject.transform.GetChild(10).GetChild(2);
 
             // add a "Print photo" button to the top edge of Rock Cam
