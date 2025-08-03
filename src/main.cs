@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using MelonLoader;
 using Newtonsoft.Json.Linq;
+using RumbleModdingAPI;
 using UnityEngine;
 
 namespace RumblePhotoAlbum;
@@ -96,6 +97,20 @@ public partial class MainClass : MelonMod
     public override void OnLateInitializeMelon()
     {
         EnsureUserDataFolders();
+        Calls.onMapInitialized += OnMapInitialized;
+    }
+
+    /**
+    * <summary>
+    * Called when the full map is initialized, and RMAPI calls can be used safely.
+    * </summary>
+    */
+    public void OnMapInitialized()
+    {
+        LoadAlbum(currentScene);
+        stashJson = (JArray)root[currentScene]["stash"];
+        albumJson = (JArray)root[currentScene]["album"];
+        initializeInteractionObjects();
     }
 
     /**
@@ -111,13 +126,6 @@ public partial class MainClass : MelonMod
             InitModUI();
             return;
         }
-        if (sceneName != "Loader")
-        {
-            LoadAlbum(sceneName);
-        }
-        stashJson = (JArray)root[currentScene]["stash"];
-        albumJson = (JArray)root[currentScene]["album"];
-        initializeInteractionObjects();
     }
 
     /**

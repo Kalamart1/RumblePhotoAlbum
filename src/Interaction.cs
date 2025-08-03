@@ -45,24 +45,13 @@ public partial class MainClass : MelonMod
     */
     public static void initializeInteractionObjects()
     {
-        MelonCoroutines.Start(InitObjects());
-    }
-
-    /**
-    * <summary>
-    * Initializes all the objects for both the scene and DontDestroyOnLoad.
-    * </summary>
-    */
-    private static IEnumerator<WaitForSeconds> InitObjects()
-    {
         rockCamInitialized = false;
         if (currentScene == "Loader")
         {
-            yield break;
+            return;
         }
         if (currentScene == "Gym")
         {
-            yield return new WaitForSeconds(5f);
             if (AlbumInteractionItems is null)
             {
                 initializeGlobals();
@@ -91,6 +80,7 @@ public partial class MainClass : MelonMod
         gearMarketButton = GameObject.Instantiate(Calls.GameObjects.Gym.LOGIC.Heinhouserproducts.Gearmarket.Messagescreen.OneButtonLayout.GetGameObject());
         gearMarketButton.name = "gearMarketButton";
         gearMarketButton.SetActive(false);
+        gearMarketButton.transform.GetChild(0).gameObject.GetComponent<InteractionTouch>().enabled = true;
         gearMarketButton.transform.SetParent(AlbumInteractionItems.transform);
 
         //Get the mail tube object in the gym

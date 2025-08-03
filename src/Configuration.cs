@@ -17,7 +17,7 @@ public partial class MainClass : MelonMod
     {
         UI.instance.UI_Initialized += OnUIInit;
         SetUIOptions();
-        OnUISaved();
+        ReadModUIOptions();
     }
 
     /**
@@ -52,16 +52,26 @@ public partial class MainClass : MelonMod
 
     /**
      * <summary>
-     * Called when the user saves a configuration in ModUI
+     * Reads the ModUI options and updates the global config values.
      * </summary>
      */
-    private void OnUISaved()
+    private void ReadModUIOptions()
     {
         defaultColor = Hex2Color((string)Mod.Settings[0].SavedValue);
         defaultPadding = (float)Mod.Settings[1].SavedValue;
         defaultThickness = (float)Mod.Settings[2].SavedValue;
         defaultSize = (float)Mod.Settings[3].SavedValue;
         enableAlpha = (bool)Mod.Settings[4].SavedValue;
+    }
+
+    /**
+     * <summary>
+     * Called when the user saves a configuration in ModUI
+     * </summary>
+     */
+    private void OnUISaved()
+    {
+        ReadModUIOptions();
         // reload whole album
         GameObject.Destroy(photoAlbum);
         LoadAlbum(currentScene);
