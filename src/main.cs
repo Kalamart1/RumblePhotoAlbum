@@ -18,6 +18,8 @@ public static class BuildInfo
 }
 public partial class MainClass : MelonMod
 {
+    private const float maxPictureSize = 5f; // Maximum size for a picture in the gym
+
     // variables
     private static float defaultSize = 0.5f; // Default size of the frame (width or height depending on the orientation)
     private static float defaultThickness = 0.01f; // Default thickness of the frame

@@ -2,6 +2,7 @@ using MelonLoader;
 using UnityEngine;
 using RumbleModdingAPI;
 using Newtonsoft.Json.Linq;
+using System;
 using HarmonyLib;
 using Il2CppRUMBLE.Players;
 
@@ -283,7 +284,12 @@ public partial class MainClass : MelonMod
 
         // set proportional scale
         float distance = Vector3.Distance(left.localPosition, right.localPosition);
-        resizingHandle.transform.localScale = Vector3.one * distance;
+        float scale = currentlyModified.obj.transform.localScale.x * distance;
+        Transform frame = currentlyModified.obj.transform.GetChild(0);
+        float pictureSize = Math.Max(frame.localScale.x, frame.localScale.y);
+        float limitation = Math.Min(pictureSize, maxPictureSize / scale)/ pictureSize;
+
+        resizingHandle.transform.localScale = Vector3.one * distance * limitation;
 
         // apply the new position and rotation
         resizingHandle.transform.localPosition = midPos;

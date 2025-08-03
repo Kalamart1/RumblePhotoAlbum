@@ -206,8 +206,8 @@ public partial class MainClass : MelonMod
         framedPicture.rotation = ParseVector3(obj["rotation"], "rotation");
 
         // Optional fields with defaults
-        framedPicture.width = obj.Value<float?>("width") ?? 0;
-        framedPicture.height = obj.Value<float?>("height") ?? 0;
+        framedPicture.width = Math.Min(obj.Value<float?>("width") ?? 0, maxPictureSize);
+        framedPicture.height = Math.Min(obj.Value<float?>("height") ?? 0, maxPictureSize);
         framedPicture.padding = obj.Value<float?>("padding") ?? defaultPadding;
         framedPicture.thickness = obj.Value<float?>("thickness") ?? defaultThickness;
 
@@ -452,11 +452,11 @@ public partial class MainClass : MelonMod
         // Check if "height" exists, then update; otherwise update "width"
         if (pictureData.jsonConfig["height"] != null)
         {
-            pictureData.jsonConfig["height"] = pictureData.framedPicture.height; // or some computed value
+            pictureData.jsonConfig["height"] = pictureData.framedPicture.height;
         }
         else
         {
-            pictureData.jsonConfig["width"] = pictureData.framedPicture.width; // or fallback/default
+            pictureData.jsonConfig["width"] = pictureData.framedPicture.width;
         }
 
         // Save full file back to disk
