@@ -53,6 +53,8 @@ public partial class MainClass : MelonMod
                 UpdatePictureParent(currentlyModified);
                 if (!holding[0] && !holding[1])
                 {
+                    GameObject actionButtons  = currentlyModified.obj.transform.GetChild(0).GetChild(0).gameObject;
+                    actionButtons.SetActive(false);
                     currentlyModified = null; // Reset currently modified picture if not holding
                 }
             }
@@ -154,6 +156,8 @@ public partial class MainClass : MelonMod
                     holding[index] = true;
                     dst_min = dst;
                     currentlyModified = pictureData; // Update currently modified picture
+                    GameObject actionButtons = currentlyModified.obj.transform.GetChild(0).GetChild(0).gameObject;
+                    actionButtons.SetActive(true);
                     if (pictureData==mailTubePicture)
                     {
                         mailTubePicture = null;

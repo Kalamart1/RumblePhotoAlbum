@@ -79,21 +79,19 @@ public partial class MainClass : MelonMod
                 try
                 {
                     FramedPicture framedPicture = ParsePictureData(entry);
+                    Log($"Creating picture {framedPicture.path}");
 
                     if (framedPicture is null)
                         continue;
 
-                    GameObject obj = CreatePictureBlock(framedPicture, photoAlbum.transform);
-                    if (obj != null)
+                    PictureData pictureData = new PictureData();
+                    pictureData.framedPicture = framedPicture;
+
+                    CreatePictureBlock(ref pictureData, photoAlbum.transform);
+                    if (pictureData.obj != null)
                     {
                         cleanedAlbum.Add(entry);
-                        PictureData pictureData = new PictureData
-                        {
-                            framedPicture = framedPicture,
-                            obj = obj,
-                            jsonConfig = cleanedAlbum[cleanedAlbum.Count-1]
-                        };
-                        PicturesList.Add(pictureData);
+                        pictureData.jsonConfig = cleanedAlbum[cleanedAlbum.Count - 1];
                     }
                     else
                     {
@@ -285,21 +283,21 @@ public partial class MainClass : MelonMod
         throw new ArgumentException("FramedPicture: 'color' must be [r,g,b,a?] or hex string.");
     }
 
-
     /**
     * <summary>
     * Creates the GameObject for a framed picture in the scene.
     * </summary>
     */
-    private static GameObject CreatePictureBlock(FramedPicture framedPicture, Transform parent)
+    private static void CreatePictureBlock(ref PictureData pictureData, Transform parent)
     {
+        FramedPicture framedPicture = pictureData.framedPicture;
         if (!File.Exists(framedPicture.path))
         {
             // if the path is not absolute, assume it's relative to the pictures folder
             string globalPicturePath = Path.Combine(Application.dataPath, "..", UserDataPath, picturesFolder, framedPicture.path);
             if (!File.Exists(globalPicturePath))
             {
-                return null; // File does not exist, cannot create picture block
+                return; // File does not exist, cannot create picture block
             }
             else
             {
@@ -380,7 +378,59 @@ public partial class MainClass : MelonMod
         quadRenderer.material.shader = Shader.Find("Shader Graphs/RUMBLE_Prop");
         quadRenderer.material.SetTexture("_Albedo", imageTexture);
 
-        return obj;
+        // Make the picture interactable
+        pictureData.framedPicture = framedPicture;
+        pictureData.obj = obj;
+        PicturesList.Add(pictureData);
+
+        CreateActionButtons(pictureData);
+    }
+    /**
+    * <summary>
+    * Creates the action buttons on top of the picture frame.
+    * </summary>
+    */
+    private static void CreateActionButtons(PictureData pictureData)
+    {
+        var framedPicture = pictureData.framedPicture;
+        var frame = pictureData.obj.transform.GetChild(0).gameObject;
+
+        float buttonSize = framedPicture.width / 6;
+        Vector3 buttonScale = new Vector3(10 * buttonSize, framedPicture.thickness / 0.03f, 10 * buttonSize);
+        float buttonHeight = framedPicture.height / 2 + buttonSize * 0.6f;
+
+        GameObject actionButtons = new GameObject();
+        actionButtons.name = "actionButtons";
+        actionButtons.transform.localScale = Vector3.one;
+
+        System.Action action = () => stashPicture(pictureData);
+        GameObject stashButton = NewFriendButton("stash", "Stash", action);
+        stashButton.transform.localScale = buttonScale;
+        stashButton.transform.SetParent(actionButtons.transform, true);
+        stashButton.transform.localPosition = new Vector3(-framedPicture.width / 2 + buttonSize / 2, 0, 0);
+        stashButton.transform.localRotation = Quaternion.Euler(new Vector3(90f, 90f, -90));
+
+        action = () => togglePictureVisibility(pictureData);
+        GameObject visibilityButton = NewFriendButton("visibility", framedPicture.visible ? "Hide" : "Show", action);
+        visibilityButton.transform.localScale = buttonScale;
+        visibilityButton.transform.SetParent(actionButtons.transform, true);
+        visibilityButton.transform.localPosition = new Vector3(0, 0, 0);
+        visibilityButton.transform.localRotation = Quaternion.Euler(new Vector3(90f, 90f, -90));
+
+        action = () => deletePicture(pictureData);
+        GameObject deleteButton = NewFriendButton("delete", "Delete", action);
+        deleteButton.transform.localScale = buttonScale;
+        deleteButton.transform.SetParent(actionButtons.transform, true);
+        deleteButton.transform.localPosition = new Vector3(framedPicture.width / 2 - buttonSize / 2, 0, 0);
+        deleteButton.transform.localRotation = Quaternion.Euler(new Vector3(90f, 90f, -90));
+
+        actionButtons.transform.SetParent(frame.transform);
+        actionButtons.transform.localScale = new Vector3(1 / frame.transform.localScale.x,
+                                                         1 / frame.transform.localScale.y,
+                                                         1 / frame.transform.localScale.z);
+        actionButtons.transform.localPosition = new Vector3(0, buttonHeight / framedPicture.height, 0);
+        actionButtons.transform.localRotation = Quaternion.Euler(Vector3.zero);
+        actionButtons.SetActive(false);
     }
 
     /**

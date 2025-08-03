@@ -1,7 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System;
 using HarmonyLib;
 using Il2CppRUMBLE.Interactions.InteractionBase;
 using Il2CppRUMBLE.Players.Subsystems;
@@ -19,6 +19,7 @@ namespace RumblePhotoAlbum;
 public partial class MainClass : MelonMod
 {
     private static GameObject AlbumInteractionItems = null;
+    private static GameObject friendButton = null;
     private static GameObject gearMarketButton = null;
     private static GameObject mailTubeObj = null;
     private static GameObject rockCamButton = null;
@@ -76,15 +77,45 @@ public partial class MainClass : MelonMod
         AlbumInteractionItems.name = "AlbumInteractionItems";
         GameObject.DontDestroyOnLoad(AlbumInteractionItems);
 
+        friendButton = GameObject.Instantiate(Calls.GameObjects.Gym.LOGIC.Heinhouserproducts
+            .Telephone20REDUXspecialedition
+            .SettingsScreen
+            .InteractionButton1
+            .Button
+            .GetGameObject());
+        friendButton.name = "friendButton";
+        friendButton.SetActive(false);
+        friendButton.GetComponent<InteractionButton>().enabled = true;
+        friendButton.transform.GetChild(4).gameObject.SetActive(false);
+        GameObject buttonText = Calls.Create.NewText();
+        TextMeshPro textComponent = buttonText.GetComponent<TextMeshPro>();
+        textComponent.alignment = TextAlignmentOptions.Center;
+        Color textColor = new Color(1f, 0.98f, 0.75f); // very light slightly orangy yellow
+        textComponent.color = textColor;
+        textComponent.colorGradient = new VertexGradient(textColor);
+        textComponent.fontSize = 0.4f;
+        textComponent.name = "text";
+        buttonText.transform.SetParent(friendButton.transform, false);
+        buttonText.transform.localPosition = new Vector3(0, 0.015f, 0);
+        buttonText.transform.localRotation = Quaternion.Euler(new Vector3(90, 180, 0));
+        friendButton.transform.SetParent(AlbumInteractionItems.transform);
+
         // get Gear Market large button
-        gearMarketButton = GameObject.Instantiate(Calls.GameObjects.Gym.LOGIC.Heinhouserproducts.Gearmarket.Messagescreen.OneButtonLayout.GetGameObject());
+        gearMarketButton = GameObject.Instantiate(Calls.GameObjects.Gym.LOGIC.Heinhouserproducts
+            .Gearmarket
+            .Messagescreen
+            .OneButtonLayout
+            .GetGameObject());
         gearMarketButton.name = "gearMarketButton";
         gearMarketButton.SetActive(false);
         gearMarketButton.transform.GetChild(0).gameObject.GetComponent<InteractionTouch>().enabled = true;
         gearMarketButton.transform.SetParent(AlbumInteractionItems.transform);
 
         //Get the mail tube object in the gym
-        mailTubeObj = GameObject.Instantiate(Calls.GameObjects.Gym.LOGIC.Heinhouserproducts.Gearmarket.MailTube.GetGameObject());
+        mailTubeObj = GameObject.Instantiate(Calls.GameObjects.Gym.LOGIC.Heinhouserproducts
+            .Gearmarket
+            .MailTube
+            .GetGameObject());
         mailTubeObj.name = "mailTube";
         mailTubeObj.SetActive(false);
         mailTubeObj.transform.SetParent(AlbumInteractionItems.transform);
@@ -166,6 +197,37 @@ public partial class MainClass : MelonMod
 
     /**
     * <summary>
+    * Removes a picture from the scene, but does not delete the corresponding image file.
+    * </summary>
+    */
+    public static void stashPicture(PictureData pictureData)
+    {
+        Log($"stashPicture {pictureData.obj.name}");
+    }
+
+    /**
+    * <summary>
+    * Toggles the visibility of a picture to LIV and legacy camera.
+    * </summary>
+    */
+    public static void togglePictureVisibility(PictureData pictureData)
+    {
+        Log($"togglePictureVisibility {pictureData.obj.name}");
+    }
+
+    /**
+    * <summary>
+    * Removes a picture from the scene, and deletes the corresponding image file
+    * if it's in the "pictures" folder and not referenced elsewhere.
+    * </summary>
+    */
+    public static void deletePicture(PictureData pictureData)
+    {
+        Log($"deletePicture {pictureData.obj.name}");
+    }
+
+    /**
+    * <summary>
     * Initializes the objects that are specific to the Park scene.
     * </summary>
     */
@@ -205,6 +267,23 @@ public partial class MainClass : MelonMod
         mailTubeHandle.transform.SetParent(purchaseSlab, true);
         mailTubeHandle.transform.localPosition = Vector3.zero;
         mailTubeHandle.transform.localRotation = Quaternion.Euler(Vector3.zero);
+    }
+
+    /**
+    * <summary>
+    * Creates a copy of the long press button from the friend board.
+    * </summary>
+    */
+    public static GameObject NewFriendButton(string name, string text, System.Action action)
+    {
+        // Copy the object that we saved to DontDestroyOnLoad earlier
+        GameObject newButton = GameObject.Instantiate(friendButton);
+        newButton.SetActive(true);
+        newButton.name = name;
+        newButton.GetComponent<InteractionButton>().onPressed.AddListener(action);
+        TextMeshPro buttonText = newButton.transform.GetChild(6).gameObject.GetComponent<TextMeshPro>();
+        buttonText.SetText(text);
+        return newButton;
     }
 
     /**
@@ -301,23 +380,19 @@ public partial class MainClass : MelonMod
         FramedPicture framedPicture = new FramedPicture();
         framedPicture.path = imageFile;
 
-        // Create the json object that will be used to save the config
-        rockCamPicture = new PictureData();
-        rockCamPicture.jsonConfig = new JObject();
-        rockCamPicture.jsonConfig["path"] = framedPicture.path;
-
         // The spawned picture will use the default size and color
         framedPicture.padding = defaultPadding;
         framedPicture.thickness = defaultThickness;
         framedPicture.color = defaultColor;
-        GameObject obj = CreatePictureBlock(framedPicture, rockCamHandle.transform);
-        obj.transform.localPosition = new Vector3(0, framedPicture.height / 2, 0);
-        obj.transform.localRotation = Quaternion.Euler(Vector3.zero);
 
-        // Make the picture interactable
+        // Create the json object that will be used to save the config
+        rockCamPicture = new PictureData();
+        rockCamPicture.jsonConfig = new JObject();
+        rockCamPicture.jsonConfig["path"] = framedPicture.path;
         rockCamPicture.framedPicture = framedPicture;
-        rockCamPicture.obj = obj;
-        PicturesList.Add(rockCamPicture);
+
+        CreatePictureBlock(ref rockCamPicture, rockCamHandle.transform);
+        rockCamPicture.obj.transform.localPosition = new Vector3(0, framedPicture.height / 2, 0);
     }
 
     /**
@@ -371,22 +446,19 @@ public partial class MainClass : MelonMod
         framedPicture.path = stashJson[0].ToString(); // first image in stash
         stashJson.RemoveAt(0); // remove it from the stash
 
-        // Create the json object that will be used to save the config
-        mailTubePicture = new PictureData();
-        mailTubePicture.jsonConfig = new JObject();
-        mailTubePicture.jsonConfig["path"] = framedPicture.path;
-
         // The spawned picture will use the default size and color
         framedPicture.padding = defaultPadding;
         framedPicture.thickness = defaultThickness;
         framedPicture.color = defaultColor;
         framedPicture.rotation = new Vector3(0, 180, 0);
-        GameObject obj = CreatePictureBlock(framedPicture, mailTubeHandle.transform);
 
-        // Make the picture interactable
+        // Create the json object that will be used to save the config
+        mailTubePicture = new PictureData();
+        mailTubePicture.jsonConfig = new JObject();
+        mailTubePicture.jsonConfig["path"] = framedPicture.path;
         mailTubePicture.framedPicture = framedPicture;
-        mailTubePicture.obj = obj;
-        PicturesList.Add(mailTubePicture);
+
+        CreatePictureBlock(ref mailTubePicture, mailTubeHandle.transform);
 
         // Start the built-in animation of the mail tube
         animationRunning = true;

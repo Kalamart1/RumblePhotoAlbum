@@ -111,10 +111,10 @@ public partial class MainClass : MelonMod
     */
     public void OnMapInitialized()
     {
+        initializeInteractionObjects();
         LoadAlbum(currentScene);
         stashJson = (JArray)root[currentScene]["stash"];
         albumJson = (JArray)root[currentScene]["album"];
-        initializeInteractionObjects();
     }
 
     /**
