@@ -26,6 +26,7 @@ public partial class MainClass : MelonMod
     private static float defaultPadding = 0.01f; // Default frame padding around the picture
     private static Color defaultColor = new Color(0.48f, 0.80f, 0.76f); // Rumble gym green as default frame color
     private static bool enableAlpha = false; // Whether to enable alpha transparency for all pictures
+    private static bool visibility = true; // Whether the pictures are visible in cameras
     private static GameObject photoAlbum = null; // Parent object for all framed pictures
     private static string currentScene = "";
 
@@ -48,6 +49,7 @@ public partial class MainClass : MelonMod
         public float thickness;
         public Color color = defaultColor;
         public bool alpha = false;
+        public bool visible = true;
     }
 
     /**

@@ -36,6 +36,7 @@ public partial class MainClass : MelonMod
         Mod.AddToList("Default frame thickness", 0.01f, "You can set the frame thickness individually by adding a \"thickness\" field to the picture's JSON config.", new Tags { });
         Mod.AddToList("Default picture size", 0.5f, "This is the default size of the pictures when they spawn. It will not change the pictures that are already positioned.", new Tags { });
         Mod.AddToList("Enable transparency", false, 0, "WARNING: this option adds a lag spike on picture creation.\nTo lower the effect, you can enable transparency individually by adding a boolean field \"alpha\" to the picture's JSON config.", new Tags { });
+        Mod.AddToList("Show on camera", true, 0, "If disabled, this will hide all pictures from legacy camera, as well as LIV and Rock Cam.\nYou can hide/show any individual picture by clicking the corresponding button while holding it.", new Tags { });
         Mod.GetFromFile();
     }
 
@@ -62,6 +63,7 @@ public partial class MainClass : MelonMod
         defaultThickness = (float)Mod.Settings[2].SavedValue;
         defaultSize = (float)Mod.Settings[3].SavedValue;
         enableAlpha = (bool)Mod.Settings[4].SavedValue;
+        visibility = (bool)Mod.Settings[5].SavedValue;
     }
 
     /**

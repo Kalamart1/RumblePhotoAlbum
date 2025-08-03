@@ -216,6 +216,7 @@ public partial class MainClass : MelonMod
             framedPicture.color = ParseColor(colorToken);
 
         framedPicture.alpha = obj.Value<bool?>("alpha") ?? enableAlpha;
+        framedPicture.visible = obj.Value<bool?>("visible") ?? visibility;
 
         return framedPicture;
     }
@@ -317,7 +318,9 @@ public partial class MainClass : MelonMod
             imageTexture = LoadTexture(framedPicture.path, framedPicture.color);
         }
 
-        int pictureLayer = LayerMask.NameToLayer("UI"); // No collision
+        int pictureLayer = framedPicture.visible?
+            LayerMask.NameToLayer("UI") // No collision, visible
+            : LayerMask.NameToLayer("PlayerFade"); // No collision, invisible
 
         float aspectRatio = (float)imageTexture.height / imageTexture.width;
         if (framedPicture.width == 0 && framedPicture.height == 0)
@@ -457,6 +460,10 @@ public partial class MainClass : MelonMod
         else
         {
             pictureData.jsonConfig["width"] = pictureData.framedPicture.width;
+        }
+        if (pictureData.jsonConfig["visible"] != null || pictureData.framedPicture.visible!=visibility)
+        {
+            pictureData.jsonConfig["visible"] = pictureData.framedPicture.visible;
         }
 
         // Save full file back to disk
