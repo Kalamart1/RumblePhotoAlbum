@@ -212,7 +212,16 @@ public partial class MainClass : MelonMod
     */
     public static void togglePictureVisibility(PictureData pictureData)
     {
-        Log($"togglePictureVisibility {pictureData.obj.name}");
+        pictureData.framedPicture.visible = !pictureData.framedPicture.visible;
+        int pictureLayer = pictureData.framedPicture.visible ?
+            LayerMask.NameToLayer("UI") // No collision, visible
+            : LayerMask.NameToLayer("PlayerFade"); // No collision, invisible
+        pictureData.obj.transform.GetChild(0).gameObject.layer = pictureLayer;
+        pictureData.obj.transform.GetChild(1).gameObject.layer = pictureLayer;
+        Transform visibilityButton = pictureData.obj.transform.GetChild(0).GetChild(0).GetChild(1);
+        TextMeshPro buttonText = visibilityButton.GetChild(6).gameObject.GetComponent<TextMeshPro>();
+        buttonText.SetText(pictureData.framedPicture.visible ? "Hide" : "Show");
+        Log($"Made a picture {(pictureData.framedPicture.visible ? "visible" : "invisible")} to all cameras");
     }
 
     /**
