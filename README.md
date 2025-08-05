@@ -10,6 +10,15 @@ Simply drop the images you want into `UserData/RumblePhotoAlbum/pictures`, and p
 
 ![Spawned picture](img/SpawnedPicture.png)
 
+When you grab the picture, 3 buttons appear on top of it:
+- **Stash:** removes the picture from the scene and puts it back into the stash, so that it can be spawned again
+- **Hide/Show:** toggles the picture's visibility to legacy and LIV cameras (including Rock Cam). Useful for private photos!
+- **Delete:** removes the picture from the scene AND deletes the file on disk if 2 conditions are satisfied:
+    - the file is from the "pictures" folder
+    - it's not used anywhere else in the album, not even in another scene
+
+![Action buttons](img/actionButtons.png)
+
 The configuration is saved in a json file, and each scene gets its own configuration. The only scene that cannot have framed pictures is the Loader.
 
 You can also spawn a picture from anywhere on your computer by manually adding it's full path to the "stash" list in `UserData/RumblePhotoAlbum/config.json`, for the specific scene where you want the picture to be available.

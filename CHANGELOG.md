@@ -1,3 +1,7 @@
+# Version 1.1.0
+- Added 3 action buttons: stash, hide and delete
+- Added visibility option to ModUI
+
 # Version 1.0.4
 - Fixed initialization failing in some situations
 - Fixed Rock Cam button being unresponsive after scene change
