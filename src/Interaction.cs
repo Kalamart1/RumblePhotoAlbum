@@ -14,6 +14,7 @@ using MelonLoader;
 using Newtonsoft.Json.Linq;
 using RumbleModdingAPI;
 using UnityEngine;
+using Newtonsoft.Json;
 
 namespace RumblePhotoAlbum;
 public partial class MainClass : MelonMod
@@ -202,7 +203,13 @@ public partial class MainClass : MelonMod
     */
     public static void stashPicture(PictureData pictureData)
     {
-        Log($"stashPicture {pictureData.obj.name}");
+        pictureData.jsonConfig.Remove();
+        GameObject.Destroy(pictureData.obj);
+        currentlyModified = null;
+        stashJson.Add(pictureData.framedPicture.path);
+        PicturesList.Remove(pictureData);
+        File.WriteAllText(fullPath, root.ToString(Formatting.Indented));
+        Log($"Stashed a picture");
     }
 
     /**

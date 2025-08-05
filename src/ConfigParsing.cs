@@ -291,7 +291,8 @@ public partial class MainClass : MelonMod
     private static void CreatePictureBlock(ref PictureData pictureData, Transform parent)
     {
         FramedPicture framedPicture = pictureData.framedPicture;
-        if (!File.Exists(framedPicture.path))
+        string filePath = framedPicture.path;
+        if (!File.Exists(filePath))
         {
             // if the path is not absolute, assume it's relative to the pictures folder
             string globalPicturePath = Path.Combine(Application.dataPath, "..", UserDataPath, picturesFolder, framedPicture.path);
@@ -301,7 +302,7 @@ public partial class MainClass : MelonMod
             }
             else
             {
-                framedPicture.path = globalPicturePath;
+                filePath = globalPicturePath;
             }
         }
 
@@ -309,11 +310,11 @@ public partial class MainClass : MelonMod
         Texture2D imageTexture = null;
         if (framedPicture.alpha)
         {
-            imageTexture = LoadFlattenedTexture(framedPicture.path, framedPicture.color);
+            imageTexture = LoadFlattenedTexture(filePath, framedPicture.color);
         }
         else
         {
-            imageTexture = LoadTexture(framedPicture.path, framedPicture.color);
+            imageTexture = LoadTexture(filePath, framedPicture.color);
         }
 
         int pictureLayer = framedPicture.visible?

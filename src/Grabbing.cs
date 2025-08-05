@@ -170,10 +170,6 @@ public partial class MainClass : MelonMod
                     }
                 }
             }
-            if (currentlyModified is not null)
-            {
-                string side = (index == 0) ? "left" : "right";
-            }
         }
     }
 
