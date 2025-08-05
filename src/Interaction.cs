@@ -239,7 +239,41 @@ public partial class MainClass : MelonMod
     */
     public static void deletePicture(PictureData pictureData)
     {
-        Log($"deletePicture {pictureData.obj.name}");
+        pictureData.jsonConfig.Remove();
+        GameObject.Destroy(pictureData.obj);
+        currentlyModified = null;
+        PicturesList.Remove(pictureData);
+        File.WriteAllText(fullPath, root.ToString(Formatting.Indented));
+        string globalPicturePath = Path.Combine(Application.dataPath, "..", UserDataPath, picturesFolder, pictureData.framedPicture.path);
+        if (File.Exists(globalPicturePath))
+        {
+            bool usedElsewhere = false;
+            foreach (var scene in root)
+            {
+                JArray album = (JArray)scene.Value["album"];
+                foreach (var entry in album)
+                {
+                    if (entry.Value<string>("path") == pictureData.framedPicture.path)
+                    {
+                        usedElsewhere = true;
+                        break;
+                    }
+                }
+                if (usedElsewhere)
+                {
+                    break;
+                }
+            }
+            if (usedElsewhere)
+            {
+                Log($"File not deleted because it's used elsewhere: {pictureData.framedPicture.path}");
+            }
+            else
+            {
+                File.Delete(globalPicturePath);
+                Log($"Deleted file: {pictureData.framedPicture.path}");
+            }
+        }
     }
 
     /**
