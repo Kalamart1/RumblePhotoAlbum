@@ -11,34 +11,19 @@ namespace RumblePhotoAlbum;
 public static class BuildInfo
 {
     public const string ModName = "RumblePhotoAlbum";
-    public const string ModVersion = "1.1.0";
+    public const string ModVersion = "1.1.1";
     public const string Description = "Decorate your environment with framed pictures";
     public const string Author = "Kalamart";
     public const string Company = "";
 }
 public partial class MainClass : MelonMod
 {
-    private const float maxPictureSize = 5f; // Maximum size for a picture in the gym
-
-    // variables
-    private static float defaultSize = 0.5f; // Default size of the frame (width or height depending on the orientation)
-    private static float defaultThickness = 0.01f; // Default thickness of the frame
-    private static float defaultPadding = 0.01f; // Default frame padding around the picture
-    private static Color defaultColor = new Color(0.48f, 0.80f, 0.76f); // Rumble gym green as default frame color
-    private static bool enableAlpha = false; // Whether to enable alpha transparency for all pictures
-    private static bool visibility = true; // Whether the pictures are visible in cameras
-    private static GameObject photoAlbum = null; // Parent object for all framed pictures
-    private static string currentScene = "";
-
-    private static List<PictureData> PicturesList = null;
-
     /**
     * <summary>
-    * Structure of each element in the "album" field of the config file,
-    * plus the corresponding GameObject in the scene (if any)
+    * Structure of each element in the "album" field of the config file.
     * </summary>
     */
-    public class FramedPicture
+    public class PictureDataInternal
     {
         public string path;
         public Vector3 position;
@@ -46,24 +31,27 @@ public partial class MainClass : MelonMod
         public float width = 0;
         public float height = 0;
         public float padding = defaultPadding;
-        public float thickness;
+        public float thickness = defaultThickness;
         public Color color = defaultColor;
         public bool alpha = false;
         public bool visible = true;
-    }
-
-    /**
-    * <summary>
-    * Structure of each element in the "album" field of the config file,
-    * plus the corresponding GameObject in the scene (if any)
-    * </summary>
-    */
-    public class PictureData
-    {
         public GameObject obj = null;
-        public FramedPicture framedPicture;
         public JToken jsonConfig = null;
     }
+
+    private const float maxPictureSize = 5f; // Maximum size for a picture in the gym
+
+    // variables
+    protected static float defaultSize = 0.5f; // Default size of the frame (width or height depending on the orientation)
+    protected static float defaultThickness = 0.01f; // Default thickness of the frame
+    protected static float defaultPadding = 0.01f; // Default frame padding around the picture
+    protected static Color defaultColor = new Color(0.48f, 0.80f, 0.76f); // Rumble gym green as default frame color
+    protected static bool enableAlpha = false; // Whether to enable alpha transparency for all pictures
+    protected static bool visibility = true; // Whether the pictures are visible in cameras
+    protected static GameObject photoAlbum = null; // Parent object for all framed pictures
+    protected static string currentScene = "";
+
+    private static List<PictureData> PicturesList = null;
 
     /**
     * <summary>
@@ -109,7 +97,7 @@ public partial class MainClass : MelonMod
     * Called when the full map is initialized, and RMAPI calls can be used safely.
     * </summary>
     */
-    public void OnMapInitialized()
+    private void OnMapInitialized()
     {
         initializeInteractionObjects();
         LoadAlbum(currentScene);

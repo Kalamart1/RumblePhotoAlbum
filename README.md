@@ -55,3 +55,32 @@ Many aspects of the frames can be customized via ModUI or by editing the config.
 
 ## Reloading all the pictures currently in the scene
 Any time the mod configuration in ModUI is saved, all the pictures are reloaded.
+
+## For modders! There's an API now!
+
+Use the `RumblePhotoAlbum` namespace to get access to the interface:
+
+### The classes
+The class `PictureData` represents a spawned picture. It contains values like the position, size, color, and even the GameObject reference for the picture.
+
+The class `PhotoAPI` contains the API methods. It is currently pretty simple, with just 2 methods: create or delete a picture.
+
+### PhotoAPI.CreatePicture
+```cs
+public static PictureData CreatePicture(string path, Vector3 position, Vector3 rotation, float width = 0, float height = 0, float? padding = null, float? thickness = null, Color? color = null, bool? alpha = null);
+```
+This method can be used by an outside mod in order to create a picture. A bunch of things can be customized, but they are all optional. The only mandatory arguments are the path, the position and the rotation of the picture. The rest can be added as named arguments, for example `color: Color.black`.
+
+The returned value is a structure that represents the freshly spawned picture. If the spawning failed, then `pictureData.obj` will be `null`.
+
+### PhotoAPI.DeletePicture
+```cs
+public static void DeletePicture(PictureData pictureData);
+```
+This method can be used by an outside mod in order to delete a picture. Simply provide the structure that was returned by `PhotoAPI.CreatePicture`.
+
+### PictureData.delete
+```cs
+public void delete();
+```
+Equivalent to `PhotoAPI.DeletePicture`.

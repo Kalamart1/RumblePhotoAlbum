@@ -1,3 +1,7 @@
+# Version 1.1.1
+- Added an API to allow other mods to use framed pictures
+- Fixed the "delete" button deleting the file even if it's outside of UserData
+
 # Version 1.1.0
 - Added 3 action buttons: stash, hide and delete
 - Added visibility option to ModUI

@@ -45,7 +45,7 @@ public partial class MainClass : MelonMod
     * Initializes the buttons and various interactables.
     * </summary>
     */
-    public static void initializeInteractionObjects()
+    private static void initializeInteractionObjects()
     {
         rockCamInitialized = false;
         if (currentScene == "Loader")
@@ -72,7 +72,7 @@ public partial class MainClass : MelonMod
     * Initializes the objects that are to be saved to DontDestroyOnLoad (used in multiple scenes).
     * </summary>
     */
-    public static void initializeGlobals()
+    private static void initializeGlobals()
     {
         AlbumInteractionItems = new GameObject();
         AlbumInteractionItems.name = "AlbumInteractionItems";
@@ -134,7 +134,7 @@ public partial class MainClass : MelonMod
     * Initializes the Rock Cam print button and handle to print to.
     * </summary>
     */
-    public static void initializeRockCam()
+    private static void initializeRockCam()
     {
         try
         {
@@ -180,7 +180,7 @@ public partial class MainClass : MelonMod
     * Initializes the objects that are specific to the Gym scene.
     * </summary>
     */
-    public static void initializeGymObjects()
+    private static void initializeGymObjects()
     {
         //Get the mail tube object in the gym
         mailTube = Calls.GameObjects.Gym.LOGIC.Heinhouserproducts.Gearmarket.MailTube.GetGameObject().GetComponent<MailTube>();
@@ -201,12 +201,15 @@ public partial class MainClass : MelonMod
     * Removes a picture from the scene, but does not delete the corresponding image file.
     * </summary>
     */
-    public static void stashPicture(PictureData pictureData)
+    private static void stashPicture(PictureData pictureData)
     {
-        pictureData.jsonConfig.Remove();
+        if (pictureData.jsonConfig is not null)
+        {
+            pictureData.jsonConfig.Remove();
+        }
         GameObject.Destroy(pictureData.obj);
         currentlyModified = null;
-        stashJson.Add(pictureData.framedPicture.path);
+        stashJson.Add(pictureData.path);
         PicturesList.Remove(pictureData);
         File.WriteAllText(fullPath, root.ToString(Formatting.Indented));
         Log($"Stashed a picture");
@@ -217,18 +220,18 @@ public partial class MainClass : MelonMod
     * Toggles the visibility of a picture to LIV and legacy camera.
     * </summary>
     */
-    public static void togglePictureVisibility(PictureData pictureData)
+    private static void togglePictureVisibility(PictureData pictureData)
     {
-        pictureData.framedPicture.visible = !pictureData.framedPicture.visible;
-        int pictureLayer = pictureData.framedPicture.visible ?
+        pictureData.visible = !pictureData.visible;
+        int pictureLayer = pictureData.visible ?
             LayerMask.NameToLayer("UI") // No collision, visible
             : LayerMask.NameToLayer("PlayerFade"); // No collision, invisible
         pictureData.obj.transform.GetChild(0).gameObject.layer = pictureLayer;
         pictureData.obj.transform.GetChild(1).gameObject.layer = pictureLayer;
         Transform visibilityButton = pictureData.obj.transform.GetChild(0).GetChild(0).GetChild(1);
         TextMeshPro buttonText = visibilityButton.GetChild(6).gameObject.GetComponent<TextMeshPro>();
-        buttonText.SetText(pictureData.framedPicture.visible ? "Hide" : "Show");
-        Log($"Made a picture {(pictureData.framedPicture.visible ? "visible" : "invisible")} to all cameras");
+        buttonText.SetText(pictureData.visible ? "Hide" : "Show");
+        Log($"Made a picture {(pictureData.visible ? "visible" : "invisible")} to all cameras");
     }
 
     /**
@@ -237,14 +240,21 @@ public partial class MainClass : MelonMod
     * if it's in the "pictures" folder and not referenced elsewhere.
     * </summary>
     */
-    public static void deletePicture(PictureData pictureData)
+    protected static void deletePicture(PictureData pictureData, bool keepFile)
     {
-        pictureData.jsonConfig.Remove();
+        if (pictureData.jsonConfig is not null)
+        {
+            pictureData.jsonConfig.Remove();
+            File.WriteAllText(fullPath, root.ToString(Formatting.Indented));
+        }
         GameObject.Destroy(pictureData.obj);
         currentlyModified = null;
         PicturesList.Remove(pictureData);
-        File.WriteAllText(fullPath, root.ToString(Formatting.Indented));
-        string globalPicturePath = Path.Combine(Application.dataPath, "..", UserDataPath, picturesFolder, pictureData.framedPicture.path);
+        if (File.Exists(pictureData.path) || keepFile)
+        {
+            return;
+        }
+        string globalPicturePath = Path.Combine(Application.dataPath, "..", UserDataPath, picturesFolder, pictureData.path);
         if (File.Exists(globalPicturePath))
         {
             bool usedElsewhere = false;
@@ -253,7 +263,7 @@ public partial class MainClass : MelonMod
                 JArray album = (JArray)scene.Value["album"];
                 foreach (var entry in album)
                 {
-                    if (entry.Value<string>("path") == pictureData.framedPicture.path)
+                    if (entry.Value<string>("path") == pictureData.path)
                     {
                         usedElsewhere = true;
                         break;
@@ -266,12 +276,12 @@ public partial class MainClass : MelonMod
             }
             if (usedElsewhere)
             {
-                Log($"File not deleted because it's used elsewhere: {pictureData.framedPicture.path}");
+                Log($"File not deleted because it's used elsewhere: {pictureData.path}");
             }
             else
             {
                 File.Delete(globalPicturePath);
-                Log($"Deleted file: {pictureData.framedPicture.path}");
+                Log($"Deleted file: {pictureData.path}");
             }
         }
     }
@@ -281,7 +291,7 @@ public partial class MainClass : MelonMod
     * Initializes the objects that are specific to the Park scene.
     * </summary>
     */
-    public static void initializeParkObjects()
+    private static void initializeParkObjects()
     {
         //Copy the mail tube object that comes from the gym
         mailTube = NewMailTube().GetComponent<MailTube>();
@@ -303,7 +313,7 @@ public partial class MainClass : MelonMod
     * Initializes all the objects that are needed for the mail tube to work for delivering pictures.
     * </summary>
     */
-    public static void initializeMailTubeObjects()
+    private static void initializeMailTubeObjects()
     {
         // reset state variables
         animationRunning = false;
@@ -324,7 +334,7 @@ public partial class MainClass : MelonMod
     * Creates a copy of the long press button from the friend board.
     * </summary>
     */
-    public static GameObject NewFriendButton(string name, string text, System.Action action)
+    private static GameObject NewFriendButton(string name, string text, System.Action action)
     {
         // Copy the object that we saved to DontDestroyOnLoad earlier
         GameObject newButton = GameObject.Instantiate(friendButton);
@@ -341,7 +351,7 @@ public partial class MainClass : MelonMod
     * Creates a copy of the Mail Tube on the Gear Market.
     * </summary>
     */
-    public static GameObject NewMailTube()
+    private static GameObject NewMailTube()
     {
         // Copy the object that we saved to DontDestroyOnLoad earlier
         GameObject newMailTube = GameObject.Instantiate(mailTubeObj);
@@ -354,7 +364,7 @@ public partial class MainClass : MelonMod
     * Creates a copy of the large gear market button.
     * </summary>
     */
-    public static GameObject NewGearMarketButton(string name, string text, System.Action action)
+    private static GameObject NewGearMarketButton(string name, string text, System.Action action)
     {
         // Copy the object that we saved to DontDestroyOnLoad earlier
         GameObject newButton = GameObject.Instantiate(gearMarketButton);
@@ -373,7 +383,7 @@ public partial class MainClass : MelonMod
     * Creates a copy of the "flip camera" button from Rock Cam.
     * </summary>
     */
-    public static GameObject NewRockCamButton(string name, string text, System.Action action)
+    private static GameObject NewRockCamButton(string name, string text, System.Action action)
     {
         // Copy the object that we saved to DontDestroyOnLoad earlier
         GameObject newButton = GameObject.Instantiate(rockCamButton);
@@ -408,7 +418,7 @@ public partial class MainClass : MelonMod
         File.Copy(src, dst, overwrite: true);
         return fileName;
     }
-    public static void PrintPhoto()
+    private static void PrintPhoto()
     {
         if (rockCamPicture is not null)
         {
@@ -427,22 +437,22 @@ public partial class MainClass : MelonMod
             return;
         }
 
-        FramedPicture framedPicture = new FramedPicture();
-        framedPicture.path = imageFile;
+        PictureData pictureData = new PictureData();
+        pictureData.path = imageFile;
 
         // The spawned picture will use the default size and color
-        framedPicture.padding = defaultPadding;
-        framedPicture.thickness = defaultThickness;
-        framedPicture.color = defaultColor;
+        pictureData.padding = defaultPadding;
+        pictureData.thickness = defaultThickness;
+        pictureData.color = defaultColor;
 
         // Create the json object that will be used to save the config
         rockCamPicture = new PictureData();
         rockCamPicture.jsonConfig = new JObject();
-        rockCamPicture.jsonConfig["path"] = framedPicture.path;
-        rockCamPicture.framedPicture = framedPicture;
+        rockCamPicture.jsonConfig["path"] = pictureData.path;
+        rockCamPicture = pictureData;
 
         CreatePictureBlock(ref rockCamPicture, rockCamHandle.transform);
-        rockCamPicture.obj.transform.localPosition = new Vector3(0, framedPicture.height / 2, 0);
+        rockCamPicture.obj.transform.localPosition = new Vector3(0, pictureData.height / 2, 0);
     }
 
     /**
@@ -451,7 +461,7 @@ public partial class MainClass : MelonMod
     * Summons a new picture from the stash, and adds it to the album.
     * </summary>
     */
-    public static void SpawnPicture()
+    private static void SpawnPicture()
     {
         if (animationRunning || mailTubePicture is not null)
         {
@@ -492,21 +502,21 @@ public partial class MainClass : MelonMod
     */
     private static IEnumerator<WaitForSeconds> RunMailTubeAnimation()
     {
-        FramedPicture framedPicture = new FramedPicture();
-        framedPicture.path = stashJson[0].ToString(); // first image in stash
+        PictureData pictureData = new PictureData();
+        pictureData.path = stashJson[0].ToString(); // first image in stash
         stashJson.RemoveAt(0); // remove it from the stash
 
         // The spawned picture will use the default size and color
-        framedPicture.padding = defaultPadding;
-        framedPicture.thickness = defaultThickness;
-        framedPicture.color = defaultColor;
-        framedPicture.rotation = new Vector3(0, 180, 0);
+        pictureData.padding = defaultPadding;
+        pictureData.thickness = defaultThickness;
+        pictureData.color = defaultColor;
+        pictureData.rotation = new Vector3(0, 180, 0);
 
         // Create the json object that will be used to save the config
         mailTubePicture = new PictureData();
         mailTubePicture.jsonConfig = new JObject();
-        mailTubePicture.jsonConfig["path"] = framedPicture.path;
-        mailTubePicture.framedPicture = framedPicture;
+        mailTubePicture.jsonConfig["path"] = pictureData.path;
+        mailTubePicture = pictureData;
 
         CreatePictureBlock(ref mailTubePicture, mailTubeHandle.transform);
 
@@ -538,7 +548,7 @@ public partial class MainClass : MelonMod
      * </summary>
      */
     [HarmonyPatch(typeof(LCKTabletUtility), "TakePhoto", new Type[] { })]
-    public static class PhotoTakenPatch
+    private static class PhotoTakenPatch
     {
         private static bool Prefix(ref LCKTabletUtility __instance)
         {

@@ -147,7 +147,7 @@ public partial class MainClass : MelonMod
             {
                 if (pictureData.obj is null)
                 {
-                    LogWarn($"Framed picture {pictureData.framedPicture.path} has no GameObject associated with it.");
+                    LogWarn($"Framed picture {pictureData.path} has no GameObject associated with it.");
                     continue;
                 }
                 float dst = DistanceToPictureSurface(hand[index], pictureData);
@@ -178,7 +178,7 @@ public partial class MainClass : MelonMod
     * Get the distance from the hand to the frame's edge.
     * </summary>
     */
-    public static float DistanceToPictureSurface(GameObject hand, PictureData pictureData)
+    private static float DistanceToPictureSurface(GameObject hand, PictureData pictureData)
     {
         Vector3 handPos = hand.transform.position;
 
@@ -187,9 +187,9 @@ public partial class MainClass : MelonMod
         Quaternion rotation = picTransform.rotation;
 
         // Physical box half-size
-        Vector3 extents = new Vector3(pictureData.framedPicture.width,
-                                          pictureData.framedPicture.height,
-                                          pictureData.framedPicture.thickness) * 0.5f;
+        Vector3 extents = new Vector3(pictureData.width,
+                                          pictureData.height,
+                                          pictureData.thickness) * 0.5f;
 
         // Transform hand into the space of the picture
         Vector3 localHandPos = Quaternion.Inverse(rotation) * (handPos - center);
@@ -307,14 +307,12 @@ public partial class MainClass : MelonMod
         float scale = pictureData.obj.transform.localScale.x *
                       resizingHandle.transform.localScale.x;
 
-        FramedPicture framedPicture = pictureData.framedPicture;
-
         Transform frame = pictureData.obj.transform.GetChild(0);
         Transform quad = pictureData.obj.transform.GetChild(1);
         float aspectRatio = quad.localScale.y / quad.localScale.x;
 
         // the width of the image is imposed by the width of the frame
-        float localQuadWidth = frame.localScale.x - 2*framedPicture.padding / scale;
+        float localQuadWidth = frame.localScale.x - 2*pictureData.padding / scale;
         // the height is imposed by the aspect ratio of the image
         quad.localScale = new Vector3(localQuadWidth,
                                       localQuadWidth*aspectRatio,
@@ -322,14 +320,14 @@ public partial class MainClass : MelonMod
 
         // the frame's width is set by resizing, but the height follows the image's height
         frame.localScale = new Vector3(frame.localScale.x,
-                                        quad.localScale.y + 2*framedPicture.padding/scale,
-                                        framedPicture.thickness/scale);
+                                        quad.localScale.y + 2*pictureData.padding/scale,
+                                        pictureData.thickness/scale);
 
-        framedPicture.width = frame.localScale.x * scale;
-        framedPicture.height = frame.localScale.y * scale;
+        pictureData.width = frame.localScale.x * scale;
+        pictureData.height = frame.localScale.y * scale;
 
         // move the frame to the back
-        frame.transform.localPosition = new Vector3(0f, 0f, framedPicture.thickness / (2*scale));
+        frame.transform.localPosition = new Vector3(0f, 0f, pictureData.thickness / (2*scale));
         // move the image quad to the front
         quad.transform.localPosition = new Vector3(0f, 0f, -imageOffset / scale);
     }
@@ -339,7 +337,7 @@ public partial class MainClass : MelonMod
     * </summary>
     */
     [HarmonyPatch(typeof(PlayerController), "Initialize", new System.Type[] { typeof(Player) })]
-    public static class playerspawn
+    private static class PlayerSpawnPatch
     {
         private static void Postfix(ref PlayerController __instance, ref Player player)
         {

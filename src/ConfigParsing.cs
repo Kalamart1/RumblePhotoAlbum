@@ -78,14 +78,11 @@ public partial class MainClass : MelonMod
             {
                 try
                 {
-                    FramedPicture framedPicture = ParsePictureData(entry);
-                    Log($"Creating picture {framedPicture.path}");
+                    PictureData pictureData = ParsePictureData(entry);
+                    Log($"Creating picture {pictureData.path}");
 
-                    if (framedPicture is null)
+                    if (pictureData is null)
                         continue;
-
-                    PictureData pictureData = new PictureData();
-                    pictureData.framedPicture = framedPicture;
 
                     CreatePictureBlock(ref pictureData, photoAlbum.transform);
                     if (pictureData.obj != null)
@@ -95,7 +92,7 @@ public partial class MainClass : MelonMod
                     }
                     else
                     {
-                        LogWarn($"Removed missing file: {framedPicture.path}");
+                        LogWarn($"Removed missing file: {pictureData.path}");
                     }
                 }
                 catch (Exception ex)
@@ -184,39 +181,39 @@ public partial class MainClass : MelonMod
     * transparency when superposed on top of a colored background.
     * </summary>
     */
-    private static FramedPicture ParsePictureData(JToken pictureData)
+    private static PictureData ParsePictureData(JToken pictureJson)
     {
-        if (pictureData == null || pictureData.Type != JTokenType.Object)
-            throw new ArgumentException("Invalid JSON object for FramedPicture.");
+        if (pictureJson == null || pictureJson.Type != JTokenType.Object)
+            throw new ArgumentException("Invalid JSON object for PictureData.");
 
-        JObject obj = (JObject)pictureData;
+        JObject obj = (JObject)pictureJson;
 
-        FramedPicture framedPicture = new FramedPicture();
+        PictureData pictureData = new PictureData();
 
         // Required fields
-        framedPicture.path = obj.Value<string>("path");
-        if (string.IsNullOrEmpty(framedPicture.path))
+        pictureData.path = obj.Value<string>("path");
+        if (string.IsNullOrEmpty(pictureData.path))
         {
             throw new ArgumentException($"Missing field \"path\"");
         }
 
-        framedPicture.position = ParseVector3(obj["position"], "position");
-        framedPicture.rotation = ParseVector3(obj["rotation"], "rotation");
+        pictureData.position = ParseVector3(obj["position"], "position");
+        pictureData.rotation = ParseVector3(obj["rotation"], "rotation");
 
         // Optional fields with defaults
-        framedPicture.width = Math.Min(obj.Value<float?>("width") ?? 0, maxPictureSize);
-        framedPicture.height = Math.Min(obj.Value<float?>("height") ?? 0, maxPictureSize);
-        framedPicture.padding = obj.Value<float?>("padding") ?? defaultPadding;
-        framedPicture.thickness = obj.Value<float?>("thickness") ?? defaultThickness;
+        pictureData.width = Math.Min(obj.Value<float?>("width") ?? 0, maxPictureSize);
+        pictureData.height = Math.Min(obj.Value<float?>("height") ?? 0, maxPictureSize);
+        pictureData.padding = obj.Value<float?>("padding") ?? defaultPadding;
+        pictureData.thickness = obj.Value<float?>("thickness") ?? defaultThickness;
 
-        framedPicture.color = defaultColor; // Default color
+        pictureData.color = defaultColor; // Default color
         if (obj.TryGetValue("color", out JToken colorToken))
-            framedPicture.color = ParseColor(colorToken);
+            pictureData.color = ParseColor(colorToken);
 
-        framedPicture.alpha = obj.Value<bool?>("alpha") ?? enableAlpha;
-        framedPicture.visible = obj.Value<bool?>("visible") ?? visibility;
+        pictureData.alpha = obj.Value<bool?>("alpha") ?? enableAlpha;
+        pictureData.visible = obj.Value<bool?>("visible") ?? visibility;
 
-        return framedPicture;
+        return pictureData;
     }
 
     /**
@@ -266,7 +263,7 @@ public partial class MainClass : MelonMod
             return Hex2Color(hex);
         }
 
-        throw new ArgumentException("FramedPicture: 'color' must be [r,g,b,a?] or hex string.");
+        throw new ArgumentException("PictureData: 'color' must be [r,g,b,a?] or hex string.");
     }
 
     /**
@@ -280,7 +277,7 @@ public partial class MainClass : MelonMod
         {
             return color;
         }
-        throw new ArgumentException("FramedPicture: 'color' must be [r,g,b,a?] or hex string.");
+        throw new ArgumentException("PictureData: 'color' must be [r,g,b,a?] or hex string.");
     }
 
     /**
@@ -288,16 +285,16 @@ public partial class MainClass : MelonMod
     * Creates the GameObject for a framed picture in the scene.
     * </summary>
     */
-    private static void CreatePictureBlock(ref PictureData pictureData, Transform parent)
+    protected static void CreatePictureBlock(ref PictureData pictureData, Transform parent)
     {
-        FramedPicture framedPicture = pictureData.framedPicture;
-        string filePath = framedPicture.path;
+        string filePath = pictureData.path;
         if (!File.Exists(filePath))
         {
             // if the path is not absolute, assume it's relative to the pictures folder
-            string globalPicturePath = Path.Combine(Application.dataPath, "..", UserDataPath, picturesFolder, framedPicture.path);
+            string globalPicturePath = Path.Combine(Application.dataPath, "..", UserDataPath, picturesFolder, pictureData.path);
             if (!File.Exists(globalPicturePath))
             {
+                Log($"file doesn't exist");
                 return; // File does not exist, cannot create picture block
             }
             else
@@ -308,67 +305,66 @@ public partial class MainClass : MelonMod
 
         // Load texture from image file, with the frame's color as background
         Texture2D imageTexture = null;
-        if (framedPicture.alpha)
+        if (pictureData.alpha)
         {
-            imageTexture = LoadFlattenedTexture(filePath, framedPicture.color);
+            imageTexture = LoadFlattenedTexture(filePath, pictureData.color);
         }
         else
         {
-            imageTexture = LoadTexture(filePath, framedPicture.color);
+            imageTexture = LoadTexture(filePath);
         }
 
-        int pictureLayer = framedPicture.visible?
+        int pictureLayer = pictureData.visible?
             LayerMask.NameToLayer("UI") // No collision, visible
             : LayerMask.NameToLayer("PlayerFade"); // No collision, invisible
 
         float aspectRatio = (float)imageTexture.height / imageTexture.width;
-        if (framedPicture.width == 0 && framedPicture.height == 0)
+        if (pictureData.width == 0 && pictureData.height == 0)
         {
             if (aspectRatio > 1) // vertical image
             {
-                framedPicture.height = defaultSize;
+                pictureData.height = defaultSize;
             }
             else // horizontal image
             {
-                framedPicture.width = defaultSize;
+                pictureData.width = defaultSize;
             }
         }
-        if (framedPicture.width == 0)
+        if (pictureData.width == 0)
         {
-            framedPicture.width = (framedPicture.height - 2*framedPicture.padding) / aspectRatio + 2*framedPicture.padding;
+            pictureData.width = (pictureData.height - 2*pictureData.padding) / aspectRatio + 2*pictureData.padding;
         }
         else
         {
-            framedPicture.height = (framedPicture.width - 2*framedPicture.padding) * aspectRatio + 2*framedPicture.padding;
+            pictureData.height = (pictureData.width - 2*pictureData.padding) * aspectRatio + 2*pictureData.padding;
         }
-
 
         GameObject obj = new GameObject();
         obj.layer = pictureLayer;
-        obj.name = $"PictureBlock: {Path.GetFileNameWithoutExtension(framedPicture.path)}";
+        obj.name = $"PictureBlock: {Path.GetFileNameWithoutExtension(pictureData.path)}";
         obj.transform.SetParent(parent, false);
-        obj.transform.localPosition = framedPicture.position;
-        obj.transform.localRotation = Quaternion.Euler(framedPicture.rotation);
+        obj.transform.localPosition = pictureData.position;
+        obj.transform.localRotation = Quaternion.Euler(pictureData.rotation);
 
         // Create frame
         GameObject frame = GameObject.CreatePrimitive(PrimitiveType.Cube);
         frame.layer = pictureLayer;
         frame.name = "frame";
         frame.transform.SetParent(obj.transform, false);
-        frame.transform.localScale = new Vector3(framedPicture.width, framedPicture.height, framedPicture.thickness);
-        frame.transform.localPosition = new Vector3(0f, 0f, framedPicture.thickness / 2);
+        frame.transform.localScale = new Vector3(pictureData.width, pictureData.height, pictureData.thickness);
+        frame.transform.localPosition = new Vector3(0f, 0f, pictureData.thickness / 2);
 
         Renderer frameRenderer = frame.GetComponent<Renderer>();
         frameRenderer.material.shader = Shader.Find("Shader Graphs/RUMBLE_Prop");
-        frameRenderer.material.SetColor("_Overlay", framedPicture.color);
+        frameRenderer.material.SetColor("_Overlay", pictureData.color);
 
         // Create quad with the image on it
         GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
         quad.layer = pictureLayer;
         quad.name = "picture";
         quad.transform.SetParent(obj.transform, false);
-        quad.transform.localScale = new Vector3(framedPicture.width - 2*framedPicture.padding,
-                                                 framedPicture.height - 2*framedPicture.padding,
+        quad.transform.localScale = new Vector3(pictureData.width - 2*pictureData.padding,
+                                                 pictureData.height - 2*pictureData.padding,
                                                  1f);
 
         // Picture positioned 1mm in front of the frame (local +Z)
@@ -380,8 +376,8 @@ public partial class MainClass : MelonMod
         quadRenderer.material.SetTexture("_Albedo", imageTexture);
 
         // Make the picture interactable
-        pictureData.framedPicture = framedPicture;
         pictureData.obj = obj;
+        pictureData = pictureData;
         PicturesList.Add(pictureData);
 
         CreateActionButtons(pictureData);
@@ -393,43 +389,42 @@ public partial class MainClass : MelonMod
     */
     private static void CreateActionButtons(PictureData pictureData)
     {
-        var framedPicture = pictureData.framedPicture;
         var frame = pictureData.obj.transform.GetChild(0).gameObject;
 
-        float buttonSize = framedPicture.width / 6;
-        Vector3 buttonScale = new Vector3(10 * buttonSize, framedPicture.thickness / 0.03f, 10 * buttonSize);
-        float buttonHeight = framedPicture.height / 2 + buttonSize * 0.6f;
+        float buttonSize = pictureData.width / 6;
+        Vector3 buttonScale = new Vector3(10 * buttonSize, pictureData.thickness / 0.03f, 10 * buttonSize);
+        float buttonHeight = pictureData.height / 2 + buttonSize * 0.6f;
 
         GameObject actionButtons = new GameObject();
-        actionButtons.name = "actionButtons";
+         actionButtons.name = "actionButtons";
         actionButtons.transform.localScale = Vector3.one;
 
         System.Action action = () => stashPicture(pictureData);
         GameObject stashButton = NewFriendButton("stash", "Stash", action);
         stashButton.transform.localScale = buttonScale;
         stashButton.transform.SetParent(actionButtons.transform, true);
-        stashButton.transform.localPosition = new Vector3(-framedPicture.width / 2 + buttonSize / 2, 0, 0);
+        stashButton.transform.localPosition = new Vector3(-pictureData.width / 2 + buttonSize / 2, 0, 0);
         stashButton.transform.localRotation = Quaternion.Euler(new Vector3(90f, 90f, -90));
 
         action = () => togglePictureVisibility(pictureData);
-        GameObject visibilityButton = NewFriendButton("visibility", framedPicture.visible ? "Hide" : "Show", action);
+        GameObject visibilityButton = NewFriendButton("visibility", pictureData.visible ? "Hide" : "Show", action);
         visibilityButton.transform.localScale = buttonScale;
         visibilityButton.transform.SetParent(actionButtons.transform, true);
         visibilityButton.transform.localPosition = new Vector3(0, 0, 0);
         visibilityButton.transform.localRotation = Quaternion.Euler(new Vector3(90f, 90f, -90));
 
-        action = () => deletePicture(pictureData);
+        action = () => deletePicture(pictureData, false);
         GameObject deleteButton = NewFriendButton("delete", "Delete", action);
         deleteButton.transform.localScale = buttonScale;
         deleteButton.transform.SetParent(actionButtons.transform, true);
-        deleteButton.transform.localPosition = new Vector3(framedPicture.width / 2 - buttonSize / 2, 0, 0);
+        deleteButton.transform.localPosition = new Vector3(pictureData.width / 2 - buttonSize / 2, 0, 0);
         deleteButton.transform.localRotation = Quaternion.Euler(new Vector3(90f, 90f, -90));
 
         actionButtons.transform.SetParent(frame.transform);
         actionButtons.transform.localScale = new Vector3(1 / frame.transform.localScale.x,
                                                          1 / frame.transform.localScale.y,
                                                          1 / frame.transform.localScale.z);
-        actionButtons.transform.localPosition = new Vector3(0, buttonHeight / framedPicture.height, 0);
+        actionButtons.transform.localPosition = new Vector3(0, buttonHeight / pictureData.height, 0);
         actionButtons.transform.localRotation = Quaternion.Euler(Vector3.zero);
         actionButtons.SetActive(false);
     }
@@ -441,7 +436,7 @@ public partial class MainClass : MelonMod
     * transparency when superposed on top of a colored background.
     * </summary>
     */
-    public static Texture2D LoadTexture(string path, Color background)
+    private static Texture2D LoadTexture(string path)
     {
         // Load image into Texture2D with alpha channel
         byte[] data = File.ReadAllBytes(path);
@@ -457,7 +452,7 @@ public partial class MainClass : MelonMod
     * transparency when superposed on top of a colored background.
     * </summary>
     */
-    public static Texture2D LoadFlattenedTexture(string path, Color background)
+    private static Texture2D LoadFlattenedTexture(string path, Color background)
     {
         // Load image into Texture2D with alpha channel
         byte[] data = File.ReadAllBytes(path);
@@ -497,6 +492,10 @@ public partial class MainClass : MelonMod
     */
     private static void UpdatePictureConfig(PictureData pictureData)
     {
+        if (pictureData.jsonConfig is null)
+        {
+            return;
+        }
         Vector3 position = pictureData.obj.transform.position;
         Vector3 rotation = pictureData.obj.transform.eulerAngles;
         // Update position and rotation (overwrite with new arrays)
@@ -506,15 +505,15 @@ public partial class MainClass : MelonMod
         // Check if "height" exists, then update; otherwise update "width"
         if (pictureData.jsonConfig["height"] != null)
         {
-            pictureData.jsonConfig["height"] = pictureData.framedPicture.height;
+            pictureData.jsonConfig["height"] = pictureData.height;
         }
         else
         {
-            pictureData.jsonConfig["width"] = pictureData.framedPicture.width;
+            pictureData.jsonConfig["width"] = pictureData.width;
         }
-        if (pictureData.jsonConfig["visible"] != null || pictureData.framedPicture.visible!=visibility)
+        if (pictureData.jsonConfig["visible"] != null || pictureData.visible!=visibility)
         {
-            pictureData.jsonConfig["visible"] = pictureData.framedPicture.visible;
+            pictureData.jsonConfig["visible"] = pictureData.visible;
         }
 
         // Save full file back to disk

@@ -6,7 +6,7 @@ using UnityEngine;
 namespace RumblePhotoAlbum;
 public partial class MainClass : MelonMod
 {
-    Mod Mod = new Mod();
+    private Mod Mod = new Mod();
 
     /**
      * <summary>
