@@ -39,11 +39,12 @@ public partial class MainClass : MelonMod
     * extra images that don't exist on disk), and creates the objects in the scene.
     * </summary>
     */
-    private static void LoadAlbum(string sceneName)
+    private static IEnumerator<WaitForSeconds> LoadAlbum(string sceneName)
     {
         Log($"Reading from disk");
         PicturesList = new List<PictureData>();
-
+        JArray album = null;
+        JToken sceneObj = null;
         try
         {
             if (!File.Exists(fullPath))
@@ -59,7 +60,7 @@ public partial class MainClass : MelonMod
 
 
             // if the field with this scen name doesn't exist, create it
-            if (!root.TryGetValue(sceneName, out JToken sceneObj) || sceneObj.Type != JTokenType.Object)
+            if (!root.TryGetValue(sceneName, out sceneObj) || sceneObj.Type != JTokenType.Object)
             {
                 LogWarn($"No valid entry found for scene \"{sceneName}\". Creating an empty object.");
                 sceneObj = new JObject();
@@ -67,50 +68,67 @@ public partial class MainClass : MelonMod
             }
 
 
-            JArray album = sceneObj["album"] as JArray ?? new JArray();
+            album = sceneObj["album"] as JArray ?? new JArray();
 
             photoAlbum = new GameObject();
             photoAlbum.name = "PhotoAlbum";
+        }
+        catch (Exception ex)
+        {
+            LogError($"Failed to load or parse {configFile}: {ex.Message}");
+        }
 
-            // Validate album entries
-            var cleanedAlbum = new JArray();
-            foreach (var entry in album)
+        if (album is null || sceneObj is null)
+        {
+            yield break;
+        }
+
+        // Validate album entries
+        var cleanedAlbum = new JArray();
+        foreach (var entry in album)
+        {
+            try
             {
-                try
-                {
-                    PictureData pictureData = ParsePictureData(entry);
-                    Log($"Creating picture {pictureData.path}");
+                PictureData pictureData = ParsePictureData(entry);
+                Log($"Creating picture {pictureData.path}");
 
-                    if (pictureData is null)
-                        continue;
-
-                    CreatePictureBlock(ref pictureData, photoAlbum.transform);
-                    if (pictureData.obj != null)
-                    {
-                        cleanedAlbum.Add(entry);
-                        pictureData.jsonConfig = cleanedAlbum[cleanedAlbum.Count - 1];
-                    }
-                    else
-                    {
-                        LogWarn($"Removed missing file: {pictureData.path}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogError($"Failed to parse entry: {ex.Message}");
+                if (pictureData is null)
                     continue;
+
+                CreatePictureBlock(ref pictureData, photoAlbum.transform);
+                if (pictureData.obj != null)
+                {
+                    cleanedAlbum.Add(entry);
+                    pictureData.jsonConfig = cleanedAlbum[cleanedAlbum.Count - 1];
+                }
+                else
+                {
+                    LogWarn($"Removed missing file: {pictureData.path}");
                 }
             }
+            catch (Exception ex)
+            {
+                LogError($"Failed to parse entry: {ex.Message}");
+                continue;
+            }
 
+            yield return new WaitForSeconds(0.02f); // Yield to avoid freezing the game
+        }
+
+        try
+        {
             reloadStash();
             sceneObj["album"] = cleanedAlbum;
 
             // Save back the modified config
             File.WriteAllText(fullPath, root.ToString(Formatting.Indented));
+
+            stashJson = (JArray)root[currentScene]["stash"];
+            albumJson = (JArray)root[currentScene]["album"];
         }
         catch (Exception ex)
         {
-            LogError($"Failed to load or parse {configFile}: {ex.Message}");
+            LogError($"Failed to update configuration file: {ex.Message}");
         }
     }
 

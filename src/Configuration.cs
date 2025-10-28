@@ -76,6 +76,6 @@ public partial class MainClass : MelonMod
         ReadModUIOptions();
         // reload whole album
         GameObject.Destroy(photoAlbum);
-        LoadAlbum(currentScene);
+        MelonCoroutines.Start(LoadAlbum(currentScene));
     }
 }

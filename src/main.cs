@@ -100,9 +100,7 @@ public partial class MainClass : MelonMod
     private void OnMapInitialized()
     {
         initializeInteractionObjects();
-        LoadAlbum(currentScene);
-        stashJson = (JArray)root[currentScene]["stash"];
-        albumJson = (JArray)root[currentScene]["album"];
+        MelonCoroutines.Start(LoadAlbum(currentScene));
     }
 
     /**
