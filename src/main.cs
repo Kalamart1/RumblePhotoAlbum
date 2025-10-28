@@ -48,6 +48,7 @@ public partial class MainClass : MelonMod
     protected static Color defaultColor = new Color(0.48f, 0.80f, 0.76f); // Rumble gym green as default frame color
     protected static bool enableAlpha = false; // Whether to enable alpha transparency for all pictures
     protected static bool visibility = true; // Whether the pictures are visible in cameras
+    protected static bool buttonsVisibility = true; // Whether the buttons are visible on top of the held picture
     protected static GameObject photoAlbum = null; // Parent object for all framed pictures
     protected static string currentScene = "";
 

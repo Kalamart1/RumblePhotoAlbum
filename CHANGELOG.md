@@ -1,4 +1,5 @@
 # Version 1.1.1
+- Added an option to not show the action buttons on the picture
 - Added an API to allow other mods to use framed pictures
 - Fixed the "delete" button deleting the file even if it's outside of UserData
 - Fixed game freezing when spawing the pictures

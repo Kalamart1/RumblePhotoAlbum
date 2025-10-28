@@ -156,8 +156,12 @@ public partial class MainClass : MelonMod
                     holding[index] = true;
                     dst_min = dst;
                     currentlyModified = pictureData; // Update currently modified picture
-                    GameObject actionButtons = currentlyModified.obj.transform.GetChild(0).GetChild(0).gameObject;
-                    actionButtons.SetActive(true);
+
+                    if (buttonsVisibility)
+                    {
+                        GameObject actionButtons = currentlyModified.obj.transform.GetChild(0).GetChild(0).gameObject;
+                        actionButtons.SetActive(true);
+                    }
                     if (pictureData==mailTubePicture)
                     {
                         mailTubePicture = null;
