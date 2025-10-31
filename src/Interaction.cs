@@ -437,22 +437,20 @@ public partial class MainClass : MelonMod
             return;
         }
 
-        PictureData pictureData = new PictureData();
-        pictureData.path = imageFile;
+        rockCamPicture = new PictureData();
+        rockCamPicture.path = imageFile;
 
         // The spawned picture will use the default size and color
-        pictureData.padding = defaultPadding;
-        pictureData.thickness = defaultThickness;
-        pictureData.color = defaultColor;
+        rockCamPicture.padding = defaultPadding;
+        rockCamPicture.thickness = defaultThickness;
+        rockCamPicture.color = defaultColor;
 
         // Create the json object that will be used to save the config
-        rockCamPicture = new PictureData();
         rockCamPicture.jsonConfig = new JObject();
-        rockCamPicture.jsonConfig["path"] = pictureData.path;
-        rockCamPicture = pictureData;
+        rockCamPicture.jsonConfig["path"] = rockCamPicture.path;
 
         CreatePictureBlock(ref rockCamPicture, rockCamHandle.transform);
-        rockCamPicture.obj.transform.localPosition = new Vector3(0, pictureData.height / 2, 0);
+        rockCamPicture.obj.transform.localPosition = new Vector3(0, rockCamPicture.height / 2, 0);
     }
 
     /**
@@ -502,21 +500,19 @@ public partial class MainClass : MelonMod
     */
     private static IEnumerator<WaitForSeconds> RunMailTubeAnimation()
     {
-        PictureData pictureData = new PictureData();
-        pictureData.path = stashJson[0].ToString(); // first image in stash
+        mailTubePicture = new PictureData();
+        mailTubePicture.path = stashJson[0].ToString(); // first image in stash
         stashJson.RemoveAt(0); // remove it from the stash
 
         // The spawned picture will use the default size and color
-        pictureData.padding = defaultPadding;
-        pictureData.thickness = defaultThickness;
-        pictureData.color = defaultColor;
-        pictureData.rotation = new Vector3(0, 180, 0);
+        mailTubePicture.padding = defaultPadding;
+        mailTubePicture.thickness = defaultThickness;
+        mailTubePicture.color = defaultColor;
+        mailTubePicture.rotation = new Vector3(0, 180, 0);
 
         // Create the json object that will be used to save the config
-        mailTubePicture = new PictureData();
         mailTubePicture.jsonConfig = new JObject();
-        mailTubePicture.jsonConfig["path"] = pictureData.path;
-        mailTubePicture = pictureData;
+        mailTubePicture.jsonConfig["path"] = mailTubePicture.path;
 
         CreatePictureBlock(ref mailTubePicture, mailTubeHandle.transform);
 
