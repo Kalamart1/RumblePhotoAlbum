@@ -449,7 +449,7 @@ public partial class MainClass : MelonMod
         rockCamPicture.jsonConfig = new JObject();
         rockCamPicture.jsonConfig["path"] = rockCamPicture.path;
 
-        CreatePictureBlock(ref rockCamPicture, rockCamHandle.transform);
+        CreatePicture(ref rockCamPicture, rockCamHandle.transform);
         rockCamPicture.obj.transform.localPosition = new Vector3(0, rockCamPicture.height / 2, 0);
     }
 
@@ -514,7 +514,7 @@ public partial class MainClass : MelonMod
         mailTubePicture.jsonConfig = new JObject();
         mailTubePicture.jsonConfig["path"] = mailTubePicture.path;
 
-        CreatePictureBlock(ref mailTubePicture, mailTubeHandle.transform);
+        CreatePicture(ref mailTubePicture, mailTubeHandle.transform);
 
         // Start the built-in animation of the mail tube
         animationRunning = true;

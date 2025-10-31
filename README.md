@@ -40,6 +40,14 @@ If you detach the photo and press the button again, an older photo will be print
 
 You don't have to stay in the same scene to print, you can do it at any moment. The image file is copied to the UserData subfolder, so it's available for all scenes.
 
+## GIF support
+
+The mod also supports animated GIFs now!
+
+> **Warning:** Be mindful of the performance hit if you want to spawn a lot of them, I tried to optimize as much as I could, but I can't do much if you want to run hundreds of animations in one scene.
+
+![Example of GIF playback](img/gif_example.gif)
+
 ## Customization options
 Many aspects of the frames can be customized via ModUI or by editing the config.json file in UserData.
 
@@ -52,6 +60,10 @@ Many aspects of the frames can be customized via ModUI or by editing the config.
 - **Default picture size:** This only affects the initial size of a newly spawned picture, and can be changed via ModUI. You can resize a picture either by grabbing it or by adding the field **width** or **"height"** to the json configuration of the picture.
 
 - **Transparency:** transparency is disabled by default because it's not very optimized, and makes a small lag spike when creating the picture. You can enable it globally via ModUI, but to enable it for any specific picture, add the field **"alpha": true** to the json configuration of the picture.
+
+- **Action buttons:** you can disable the buttons that appear on the picture. You won't be able to delete/stash/hide it anymore, but it can be useful for filmmaking for example!
+
+- **GIF speed:** change the speed of GIF playback. Whether to make it faster or slower, this will affect all gifs at once. But there is a hardcoded limit of 0.001s between two frames.
 
 ## Reloading all the pictures currently in the scene
 Any time the mod configuration in ModUI is saved, all the pictures are reloaded.

@@ -1,11 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using Harmony;
+using Il2CppTMPro;
 using MelonLoader;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RumbleModdingAPI;
+using ThreeDISevenZeroR.UnityGifDecoder;
+using ThreeDISevenZeroR.UnityGifDecoder.Model;
 using UnityEngine;
+using UnityEngine.Playables;
+using static RumbleModdingAPI.Calls;
 
 namespace RumblePhotoAlbum;
 
@@ -20,6 +28,10 @@ public partial class MainClass : MelonMod
     // variables
     private static JObject root = null;
     private static string fullPath = Path.Combine(Application.dataPath, "..", UserDataPath, configFile);
+    private static List<GifData> gifs = null;
+    private static bool gifsLoading = false;
+    private static bool gifsPlaying = false;
+    private static float gifSpeed = 1f;
 
     /**
     * <summary>
@@ -83,6 +95,11 @@ public partial class MainClass : MelonMod
             yield break;
         }
 
+        var wait = new WaitForSeconds(0.02f);
+        gifs = new List<GifData>();
+        gifsPlaying = false;
+        gifsLoading = true;
+
         // Validate album entries
         var cleanedAlbum = new JArray();
         foreach (var entry in album)
@@ -103,7 +120,7 @@ public partial class MainClass : MelonMod
             }
             try
             {
-                CreatePictureBlock(ref pictureData, photoAlbum.transform);
+                CreatePicture(ref pictureData, photoAlbum.transform);
                 cleanedAlbum.Add(entry);
                 pictureData.jsonConfig = cleanedAlbum[cleanedAlbum.Count - 1];
             }
@@ -118,8 +135,12 @@ public partial class MainClass : MelonMod
                 continue;
             }
 
-            yield return new WaitForSeconds(0.02f); // Yield to avoid freezing the game
+            yield return wait; // Yield to avoid freezing the game
         }
+
+        // play all gif animations (if any)
+        gifsPlaying = true;
+        MelonCoroutines.Start(PlayAllGifs());
 
         try
         {
@@ -180,7 +201,7 @@ public partial class MainClass : MelonMod
         var imageFiles = new HashSet<string>(
             Directory.Exists(picturesPath)
                 ? Directory.GetFiles(picturesPath)
-                          .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg"))
+                          .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg") || f.EndsWith(".gif"))
                           .Select(f => f)
                 : Enumerable.Empty<string>()
         );
@@ -306,10 +327,10 @@ public partial class MainClass : MelonMod
 
     /**
     * <summary>
-    * Creates the GameObject for a framed picture in the scene.
+    * Parses the image file and creates the physical picture in the scene.
     * </summary>
     */
-    protected static void CreatePictureBlock(ref PictureData pictureData, Transform parent)
+    protected static void CreatePicture(ref PictureData pictureData, Transform parent)
     {
         string filePath = pictureData.path;
         if (!File.Exists(filePath))
@@ -327,16 +348,33 @@ public partial class MainClass : MelonMod
             }
         }
 
-        // Load texture from image file, with the frame's color as background
-        Texture2D imageTexture = null;
-        if (pictureData.alpha)
+        if (pictureData.path.EndsWith(".gif", StringComparison.OrdinalIgnoreCase))
         {
-            imageTexture = LoadFlattenedTexture(filePath, pictureData.color);
+            CreateGifBlock(filePath, ref pictureData, parent);
         }
         else
         {
-            imageTexture = LoadTexture(filePath);
+            // Load texture from image file, with the frame's color as background
+            Texture2D imageTexture = null;
+            if (pictureData.alpha)
+            {
+                imageTexture = LoadFlattenedTexture(filePath, pictureData.color);
+            }
+            else
+            {
+                imageTexture = LoadTexture(filePath);
+            }
+            CreatePictureBlock(ref pictureData, parent, imageTexture);
         }
+    }
+
+    /**
+    * <summary>
+    * Creates the GameObject for a framed picture in the scene.
+    * </summary>
+    */
+    private static Renderer CreatePictureBlock(ref PictureData pictureData, Transform parent, Texture2D imageTexture)
+    {
 
         int pictureLayer = pictureData.visible?
             LayerMask.NameToLayer("UI") // No collision, visible
@@ -405,7 +443,197 @@ public partial class MainClass : MelonMod
         PicturesList.Add(pictureData);
 
         CreateActionButtons(pictureData);
+
+        return quadRenderer;
     }
+
+    /**
+    * <summary>
+    * Data that needs to be stored for each frame of a GIF.
+    * </summary>
+    */
+    private class FrameData
+    {
+        public Texture2D texture;
+        public WaitForSeconds delay;
+    }
+    private class GifData
+    {
+        public Renderer renderer;
+        public GifStream gifStream;
+        public FrameData firstFrame;
+        public string path;
+    }
+
+    /**
+    * <summary>
+    * Creates the GameObject for an animated framed picture in the scene.
+    * </summary>
+    */
+    private static void CreateGifBlock(string filePath, ref PictureData pictureData, Transform parent)
+    {
+        var gifStream = new GifStream(filePath);
+
+        FrameData firstFrame = null;
+        // read all data in the stream until finding an image
+        while (firstFrame is null && gifStream.HasMoreData)
+        {
+            firstFrame = ReadGifFrame(gifStream);
+        }
+        var renderer = CreatePictureBlock(ref pictureData, parent, firstFrame.texture);
+
+        // add indicator that the gif is loading
+        GameObject loadingText = Calls.Create.NewText();
+        TextMeshPro component = loadingText.GetComponent<TextMeshPro>();
+        component.text = "Loading...";
+        component.fontSize = 1f;
+        component.color = Color.black;
+        loadingText.name = "loadingText";
+        loadingText.transform.SetParent(renderer.gameObject.transform.parent, true);
+        loadingText.transform.localPosition = new Vector3(0, 0, -0.002f);
+        loadingText.transform.localRotation = Quaternion.Euler(new Vector3(0, 0, 0));
+
+        if (gifs is not null)
+        {
+            gifs.Add(new GifData
+            {
+                renderer = renderer,
+                gifStream = gifStream,
+                firstFrame = firstFrame,
+                path = pictureData.path
+            });
+            if (!gifsLoading)
+            {
+                gifsLoading = true;
+                gifsPlaying = true;
+                MelonCoroutines.Start(PlayAllGifs());
+            }
+        }
+    }
+
+    private static IEnumerator<WaitForSeconds> PlayAllGifs()
+    {
+        if (gifs is null)
+        {
+            yield break;
+        }
+        Log($"Starting coroutine to load all gifs");
+        var wait = new WaitForSeconds(0.01f);
+        int gifIndex = 0;
+        while (gifsPlaying &&
+            gifs is not null &&
+            gifIndex < gifs.Count)
+        {
+            var gifData = gifs[gifIndex];
+            var frames = new List<FrameData>();
+            frames.Add(gifData.firstFrame);
+
+            int index = 0;
+            while (gifData.gifStream.HasMoreData) // read all data in the stream until there is no more
+            {
+                yield return wait;
+
+                FrameData frame = ReadGifFrame(gifData.gifStream);
+                if (frame is not null)
+                {
+                    frames.Add(frame);
+                }
+            }
+
+            try
+            {
+                if (gifData.renderer is not null)
+                {
+                    // finished loading, remove indicator
+                    GameObject.Destroy(gifData.renderer.gameObject.transform.parent.GetChild(2).gameObject);
+                    Log($"Starting coroutine to play gif: {gifData.path}");
+                    MelonCoroutines.Start(PlayGif(gifData.renderer, frames, gifData.path));
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+            gifIndex++;
+            yield return wait;
+        }
+        if (gifIndex == gifs.Count)
+        {
+            gifs = new List<GifData>();
+        }
+        gifsLoading = false;
+        Log($"Stopping coroutine to load all gifs");
+    }
+
+    /**
+    * <summary>
+    * Animates the texture on the renderer with the frames from the GIF stream.
+    * </summary>
+    */
+    private static IEnumerator<WaitForSeconds> PlayGif(Renderer renderer, List<FrameData> frames, string path)
+    {
+        int i = 0;
+        while (gifsPlaying)
+        {
+            var frame = frames[i];
+
+            if (frame.texture == null)
+            {
+                i = (i + 1) % frames.Count;
+                yield return frame.delay;
+                continue;
+            }
+            try
+            {
+                renderer.material.SetTexture("_Albedo", frame.texture);
+            }
+            catch (Exception ex)
+            {
+            }
+
+            // Wait one frame to allow GPU update, then wait delay
+            yield return null;
+            yield return frame.delay;
+
+            i = (i + 1) % frames.Count;
+        }
+        Log($"Stopping coroutine to play gif: {path}");
+    }
+    private static FrameData ReadGifFrame(GifStream gifStream)
+    {
+        switch (gifStream.CurrentToken)
+        {
+            case GifStream.Token.Image:
+                var image = gifStream.ReadImage();
+                var tex = new Texture2D(
+                    gifStream.Header.width,
+                    gifStream.Header.height,
+                    TextureFormat.ARGB32, false);
+
+                tex.SetPixels32(image.colors);
+                tex.Apply();
+                //float delay = (image.SafeDelaySeconds - 0.015f) / gifSpeed;
+                float delay = image.SafeDelaySeconds / gifSpeed - 0.015f;
+                if (delay<0.001f)
+                {
+                    delay = 0.001f;
+                }
+
+                // We have to store the texture and the delay for the playback,
+                // because the delay can be irregular, and we save memory by preallocating everything.
+                return new FrameData
+                {
+                    texture = tex,
+                    delay = new WaitForSeconds(delay)
+                };
+
+            default:
+                gifStream.SkipToken(); // Other tokens
+                break;
+        }
+        return null;
+    }
+
+
     /**
     * <summary>
     * Creates the action buttons on top of the picture frame.

@@ -50,7 +50,7 @@ public class PhotoAPI : MainClass
             color = color ?? defaultColor,
             alpha = alpha ?? enableAlpha
         };
-        CreatePictureBlock(ref pictureData, photoAlbum.transform);
+        CreatePicture(ref pictureData, photoAlbum.transform);
         return pictureData;
     }
 

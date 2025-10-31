@@ -1,3 +1,6 @@
+# Version 1.2.0
+- Added animated GIF support
+
 # Version 1.1.2
 - Fixed photo locations being deleted when spawning bugs
 - Fixed printed photos and mail tube spawned photos not being saved
