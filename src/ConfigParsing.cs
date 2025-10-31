@@ -87,28 +87,34 @@ public partial class MainClass : MelonMod
         var cleanedAlbum = new JArray();
         foreach (var entry in album)
         {
+            PictureData pictureData = null;
             try
             {
-                PictureData pictureData = ParsePictureData(entry);
+                pictureData = ParsePictureData(entry);
                 Log($"Creating picture {pictureData.path}");
 
                 if (pictureData is null)
                     continue;
-
-                CreatePictureBlock(ref pictureData, photoAlbum.transform);
-                if (pictureData.obj != null)
-                {
-                    cleanedAlbum.Add(entry);
-                    pictureData.jsonConfig = cleanedAlbum[cleanedAlbum.Count - 1];
-                }
-                else
-                {
-                    LogWarn($"Removed missing file: {pictureData.path}");
-                }
             }
             catch (Exception ex)
             {
                 LogError($"Failed to parse entry: {ex.Message}");
+                continue;
+            }
+            try
+            {
+                CreatePictureBlock(ref pictureData, photoAlbum.transform);
+                cleanedAlbum.Add(entry);
+                pictureData.jsonConfig = cleanedAlbum[cleanedAlbum.Count - 1];
+            }
+            catch (Exception ex)
+            {
+                LogError($"Failed to parse entry: {ex.Message}");
+                if (ex.Message != "file doesn't exist")
+                {
+                    cleanedAlbum.Add(entry);
+                    pictureData.jsonConfig = cleanedAlbum[cleanedAlbum.Count - 1];
+                }
                 continue;
             }
 
@@ -312,7 +318,7 @@ public partial class MainClass : MelonMod
             string globalPicturePath = Path.Combine(Application.dataPath, "..", UserDataPath, picturesFolder, pictureData.path);
             if (!File.Exists(globalPicturePath))
             {
-                Log($"file doesn't exist");
+                throw new Exception("file doesn't exist");
                 return; // File does not exist, cannot create picture block
             }
             else
