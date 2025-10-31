@@ -1,3 +1,7 @@
+# Version 1.1.2
+- Fixed photo locations being deleted when spawning bugs
+- Fixed printed photos and mail tube spawned photos not being saved
+
 # Version 1.1.1
 - Added an option to not show the action buttons on the picture
 - Added an API to allow other mods to use framed pictures
