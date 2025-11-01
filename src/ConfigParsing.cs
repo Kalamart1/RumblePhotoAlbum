@@ -32,6 +32,8 @@ public partial class MainClass : MelonMod
     private static bool gifsLoading = false;
     private static bool gifsPlaying = false;
     private static float gifSpeed = 1f;
+    private static float spawningFrequency = 0.02f;
+    private static float gifDecodingFrequency = 0.01f;
 
     /**
     * <summary>
@@ -95,7 +97,7 @@ public partial class MainClass : MelonMod
             yield break;
         }
 
-        var wait = new WaitForSeconds(0.02f);
+        var wait = new WaitForSeconds(spawningFrequency);
         gifs = new List<GifData>();
         gifsPlaying = false;
         gifsLoading = true;
@@ -457,6 +459,12 @@ public partial class MainClass : MelonMod
         public Texture2D texture;
         public WaitForSeconds delay;
     }
+
+    /**
+    * <summary>
+    * Data that needs to be stored for each GIF object to be animated
+    * </summary>
+    */
     private class GifData
     {
         public Renderer renderer;
@@ -518,7 +526,7 @@ public partial class MainClass : MelonMod
             yield break;
         }
         Log($"Starting coroutine to load all gifs");
-        var wait = new WaitForSeconds(0.01f);
+        var wait = new WaitForSeconds(gifDecodingFrequency);
         int gifIndex = 0;
         while (gifsPlaying &&
             gifs is not null &&
@@ -591,7 +599,6 @@ public partial class MainClass : MelonMod
             }
 
             // Wait one frame to allow GPU update, then wait delay
-            yield return null;
             yield return frame.delay;
 
             i = (i + 1) % frames.Count;
@@ -611,8 +618,7 @@ public partial class MainClass : MelonMod
 
                 tex.SetPixels32(image.colors);
                 tex.Apply();
-                //float delay = (image.SafeDelaySeconds - 0.015f) / gifSpeed;
-                float delay = image.SafeDelaySeconds / gifSpeed - 0.015f;
+                float delay = image.SafeDelaySeconds / gifSpeed - 0.01f;
                 if (delay<0.001f)
                 {
                     delay = 0.001f;
@@ -625,6 +631,9 @@ public partial class MainClass : MelonMod
                     texture = tex,
                     delay = new WaitForSeconds(delay)
                 };
+
+            case GifStream.Token.EndOfFile:
+                break;
 
             default:
                 gifStream.SkipToken(); // Other tokens

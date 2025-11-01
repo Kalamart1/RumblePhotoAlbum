@@ -44,7 +44,7 @@ You don't have to stay in the same scene to print, you can do it at any moment. 
 
 The mod also supports animated GIFs now!
 
-> **Warning:** Be mindful of the performance hit if you want to spawn a lot of them, I tried to optimize as much as I could, but I can't do much if you want to run hundreds of animations in one scene.
+**Warning:** Be mindful of the performance hit if you want to spawn a lot of them, I tried to optimize as much as I could, but I can't do much if you want to run hundreds of animations in one scene.
 
 ![Example of GIF playback](img/gif_example.gif)
 

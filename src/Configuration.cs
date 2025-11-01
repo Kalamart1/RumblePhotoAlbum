@@ -38,7 +38,9 @@ public partial class MainClass : MelonMod
         Mod.AddToList("Enable transparency", false, 0, "WARNING: this option adds a lag spike on picture creation.\nTo lower the effect, you can enable transparency individually by adding a boolean field \"alpha\" to the picture's JSON config.", new Tags { });
         Mod.AddToList("Show on camera", true, 0, "If disabled, this will hide all pictures from legacy camera, as well as LIV and Rock Cam.\nYou can hide/show any individual picture by clicking the corresponding button while holding it.", new Tags { });
         Mod.AddToList("Show action buttons", true, 0, "If disabled, the 3 buttons on the held picture won't appear.", new Tags { });
+        Mod.AddToList("Picture creation frequency", 0.02f, "How long to wait between picture spawning during the scene initialization. The bigger the number, the longer it will take for all the pictures to appear!.", new Tags { });
         Mod.AddToList("GIF playing speed", 1f, "The hardcoded mimimum delay between frames is 1000ms, so there is a maximum speed.", new Tags { });
+        Mod.AddToList("GIF decoding frequency", 0.01f, "How long to wait between parsing two consecutives frames in a GIF. Smaller number means faster loading, but also higher performance impact during scene initialization.", new Tags { });
         Mod.GetFromFile();
     }
 
@@ -67,7 +69,9 @@ public partial class MainClass : MelonMod
         enableAlpha = (bool)Mod.Settings[4].SavedValue;
         visibility = (bool)Mod.Settings[5].SavedValue;
         buttonsVisibility = (bool)Mod.Settings[6].SavedValue;
-        gifSpeed = (float)Mod.Settings[7].SavedValue;
+        spawningFrequency = (float)Mod.Settings[7].SavedValue;
+        gifSpeed = (float)Mod.Settings[8].SavedValue;
+        gifDecodingFrequency = (float)Mod.Settings[9].SavedValue;
     }
 
     /**
