@@ -521,7 +521,7 @@ public partial class MainClass : MelonMod
 
     private static IEnumerator<WaitForSeconds> PlayAllGifs()
     {
-        if (gifs is null)
+        if (gifs is null || gifs.Count == 0)
         {
             yield break;
         }
