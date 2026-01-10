@@ -103,22 +103,43 @@ public partial class MainClass : MelonMod
     * <summary>
     * Returns true if the grip status of the controller was changed (pressed or released),
     * and updates the grip status accordingly.
+    *
+    * <param name="index">Weather its the right or left hand 0 = left controller , 1 = right controller.</param>
     * </summary>
     */
-    private static bool CheckIfGripChanged(int index)
-    {
+    private static bool CheckIfGripChanged(int index) 
+    {//TODO maybe making this into a boolean named "isRightHand" and then converting the boolean using `Convert.ToInt32(bool);` would be more readable, not my code though
         bool grip_new = false;
+        
+        
+        
+
+        float threshold; //The threshold for what is considered "gripping"
+                         //is set depending on weather the player was "gripping" last tick
+        bool was_gripping = grip[index];
+        if (was_gripping)
+        {
+            //If the player was gripping last tick apply the configurable threshold to release
+            threshold = releaseThreshold;
+        }
+        else
+        {
+            //If the player was gripping last tick apply the configurable threshold to grab
+            threshold = grabThreshold;
+        }
+        
         // consider the grip active if either the trigger or
-        // the grip is pressed on the controller
+        // the grip is pressed on the controller enough
+        // to surpass the previously set threshold 
         if (index == 0)
         {
-            grip_new = (Calls.ControllerMap.LeftController.GetTrigger() > 0.5f ||
-                Calls.ControllerMap.LeftController.GetGrip() > 0.5f);
+            grip_new = (Calls.ControllerMap.LeftController.GetTrigger() > threshold ||
+                Calls.ControllerMap.LeftController.GetGrip() > threshold);
         }
         else if (index == 1)
         {
-            grip_new = (Calls.ControllerMap.RightController.GetTrigger() > 0.5f ||
-                Calls.ControllerMap.RightController.GetGrip() > 0.5f);
+            grip_new = (Calls.ControllerMap.RightController.GetTrigger() > threshold ||
+                Calls.ControllerMap.RightController.GetGrip() > threshold);
         }
 
         bool gripChanged = (grip_new != grip[index]);
