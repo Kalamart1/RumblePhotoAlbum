@@ -42,6 +42,8 @@ public partial class MainClass : MelonMod
         Mod.AddToList("Picture creation frequency", 0.02f, "How long to wait between picture spawning during the scene initialization. The bigger the number, the longer it will take for all the pictures to appear!.", new Tags { });
         Mod.AddToList("GIF playing speed", 1f, "The hardcoded mimimum delay between frames is 1000ms, so there is a maximum speed.", new Tags { });
         Mod.AddToList("GIF decoding frequency", 0.01f, "How long to wait between parsing two consecutives frames in a GIF. Smaller number means faster loading, but also higher performance impact during scene initialization.", new Tags { });
+        Mod.AddToList("Grab Threshold", 0.6f,"How much you need to press the trigger to grab a picture, 1.0 is fully pressed 0.0 is not pressed. WARNING do not use 1.0 or above, it makes the picture ungrabbable");
+        Mod.AddToList("Release Threshold",0.4f, "How little a trigger needs to be pressed to release a picture, 1.0 is fully pressed 0.0 is not pressed at all, WARNING anything bellow 0.0 will make you unable to let go of pictures");
         Mod.GetFromFile();
     }
 
@@ -74,6 +76,8 @@ public partial class MainClass : MelonMod
         spawningFrequency = (float)Mod.Settings[8].SavedValue;
         gifSpeed = (float)Mod.Settings[9].SavedValue;
         gifDecodingFrequency = (float)Mod.Settings[10].SavedValue;
+        grabThreshold = (float)Mod.Settings[11].SavedValue;
+        releaseThreshold = (float)Mod.Settings[12].SavedValue;
     }
 
     /**

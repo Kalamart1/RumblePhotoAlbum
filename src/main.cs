@@ -49,9 +49,14 @@ public partial class MainClass : MelonMod
     protected static float defaultMetallicness = 0; // Default metallicness of the frame
     protected static float defaultPadding = 0.01f; // Default frame padding around the picture
     protected static Color defaultColor = new Color(0.48f, 0.80f, 0.76f); // Rumble gym green as default frame color
+
+    protected static float grabThreshold = 0.6f;
+    protected static float releaseThreshold = 0.4f;
+    
     protected static bool enableAlpha = false; // Whether to enable alpha transparency for all pictures
     protected static bool visibility = true; // Whether the pictures are visible in cameras
     protected static bool buttonsVisibility = true; // Whether the buttons are visible on top of the held picture
+    
     protected static GameObject photoAlbum = null; // Parent object for all framed pictures
     protected static string currentScene = "Loader";
     private static bool flatlandFound = false;
