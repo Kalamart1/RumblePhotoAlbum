@@ -44,6 +44,7 @@ public partial class MainClass : MelonMod
         Mod.AddToList("GIF decoding frequency", 0.01f, "How long to wait between parsing two consecutives frames in a GIF. Smaller number means faster loading, but also higher performance impact during scene initialization.", new Tags { });
         Mod.AddToList("Grab Threshold", 0.6f,"How much you need to press the trigger to grab a picture, 1.0 is fully pressed 0.0 is not pressed. WARNING do not use 1.0 or above, it makes the picture ungrabbable");
         Mod.AddToList("Release Threshold",0.4f, "How little a trigger needs to be pressed to release a picture, 1.0 is fully pressed 0.0 is not pressed at all, WARNING anything bellow 0.0 will make you unable to let go of pictures");
+        Mod.AddToList("Load album",true,0 ,"Weather the mod will show any photos, this essentially disables the mod when set to false. Very handy if you happen to have 300 images in the ring :3 -O");
         Mod.GetFromFile();
     }
 
@@ -78,6 +79,7 @@ public partial class MainClass : MelonMod
         gifDecodingFrequency = (float)Mod.Settings[10].SavedValue;
         grabThreshold = (float)Mod.Settings[11].SavedValue;
         releaseThreshold = (float)Mod.Settings[12].SavedValue;
+        shouldLoadAlbum = (bool)Mod.Settings[13].SavedValue;
     }
 
     /**
