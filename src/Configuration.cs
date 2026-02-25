@@ -31,7 +31,7 @@ public partial class MainClass : MelonMod
         Mod.ModVersion = BuildInfo.ModVersion;
 
         Mod.SetFolder("RumblePhotoAlbum");
-        Mod.AddToList("Default frame color", "#7accc2", "You can set the frame color individually by adding a \"color\" field to the picture's JSON config.", new Tags { });
+        Mod.AddToList("Default frame color", "#7dc6e3", "You can set the frame color individually by adding a \"color\" field to the picture's JSON config.", new Tags { });
         Mod.AddToList("Default frame padding", 0.01f, "You can set the frame padding individually by adding a \"padding\" field to the picture's JSON config.", new Tags { });
         Mod.AddToList("Default frame thickness", 0.01f, "You can set the frame thickness individually by adding a \"thickness\" field to the picture's JSON config.", new Tags { });
         Mod.AddToList("Default picture size", 0.5f, "This is the default size of the pictures when they spawn. It will not change the pictures that are already positioned.", new Tags { });

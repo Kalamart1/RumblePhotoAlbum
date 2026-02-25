@@ -13,7 +13,7 @@ using ThreeDISevenZeroR.UnityGifDecoder;
 using ThreeDISevenZeroR.UnityGifDecoder.Model;
 using UnityEngine;
 using UnityEngine.Playables;
-using static RumbleModdingAPI.Calls;
+using RumbleModdingAPI.RMAPI;
 
 namespace RumblePhotoAlbum;
 
@@ -381,7 +381,7 @@ public partial class MainClass : MelonMod
 
         int pictureLayer = pictureData.visible?
             LayerMask.NameToLayer("UI") // No collision, visible
-            : LayerMask.NameToLayer("PlayerFade"); // No collision, invisible
+            : LayerMask.NameToLayer("ScreenFade"); // No collision, invisible
 
         float aspectRatio = (float)imageTexture.height / imageTexture.width;
         if (pictureData.width == 0 && pictureData.height == 0)
@@ -492,7 +492,7 @@ public partial class MainClass : MelonMod
         var renderer = CreatePictureBlock(ref pictureData, parent, firstFrame.texture);
 
         // add indicator that the gif is loading
-        GameObject loadingText = Calls.Create.NewText();
+        GameObject loadingText = Create.NewText();
         TextMeshPro component = loadingText.GetComponent<TextMeshPro>();
         component.text = "Loading...";
         component.fontSize = 1f;
@@ -733,7 +733,7 @@ public partial class MainClass : MelonMod
         // Load image into Texture2D with alpha channel
         byte[] data = File.ReadAllBytes(path);
         Texture2D input = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-        input.LoadImage(data);
+        input.LoadImage( data);
 
         // Get all pixels of the image at once
         Color[] inputPixels = input.GetPixels();
