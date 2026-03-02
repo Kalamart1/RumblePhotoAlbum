@@ -1,3 +1,6 @@
+# Version 1.3.0
+- Fixed the mod for v0.5.0.1
+
 # Version 1.2.4
 - Fixed action button visibility option not working
 

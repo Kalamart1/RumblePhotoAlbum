@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using MelonLoader;
 using Newtonsoft.Json.Linq;
-using RumbleModdingAPI;
+using RumbleModdingAPI.RMAPI;
 using UnityEngine;
 using Il2CppRUMBLE.Interactions.InteractionBase;
 
@@ -12,7 +12,7 @@ namespace RumblePhotoAlbum;
 public static class BuildInfo
 {
     public const string ModName = "RumblePhotoAlbum";
-    public const string ModVersion = "1.2.4";
+    public const string ModVersion = "1.3.0";
     public const string Description = "Decorate your environment with framed pictures";
     public const string Author = "Kalamart";
     public const string Company = "";
@@ -51,7 +51,7 @@ public partial class MainClass : MelonMod
     protected static bool visibility = true; // Whether the pictures are visible in cameras
     protected static bool buttonsVisibility = true; // Whether the buttons are visible on top of the held picture
     protected static GameObject photoAlbum = null; // Parent object for all framed pictures
-    protected static string currentScene = "";
+    protected static string currentScene = "Loader";
     private static bool flatlandFound = false;
 
     private static List<PictureData> PicturesList = null;
@@ -92,8 +92,8 @@ public partial class MainClass : MelonMod
     public override void OnLateInitializeMelon()
     {
         EnsureUserDataFolders();
-        Calls.onMapInitialized += OnMapInitialized;
-        Calls.onMyModsGathered += CheckMods;
+        Actions.onMapInitialized += OnMapInitialized;
+        Actions.onMyModsGathered += CheckMods;
     }
 
     /**
@@ -115,10 +115,16 @@ public partial class MainClass : MelonMod
     * Called when the full map is initialized, and RMAPI calls can be used safely.
     * </summary>
     */
-    private void OnMapInitialized()
+    private void OnMapInitialized(string sceneName)
     {
+        currentScene = sceneName;
+        if (sceneName == "Gym" && flatlandFound)
+        {
+            MelonCoroutines.Start(ListenForFlatLandButton());
+        }
+
         initializeInteractionObjects();
-        MelonCoroutines.Start(LoadAlbum(currentScene));
+        MelonCoroutines.Start(LoadAlbum(sceneName));
     }
 
     /**
@@ -128,15 +134,9 @@ public partial class MainClass : MelonMod
     */
     public override void OnSceneWasLoaded(int buildIndex, string sceneName)
     {
-        currentScene = sceneName;
         if (sceneName == "Loader")
         {
             InitModUI();
-            return;
-        }
-        else if (sceneName == "Gym"  && flatlandFound)
-        {
-            MelonCoroutines.Start(ListenForFlatLandButton());
         }
     }
 

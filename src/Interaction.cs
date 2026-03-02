@@ -12,7 +12,7 @@ using Il2CppRUMBLE.Utilities;
 using Il2CppTMPro;
 using MelonLoader;
 using Newtonsoft.Json.Linq;
-using RumbleModdingAPI;
+using RumbleModdingAPI.RMAPI;
 using UnityEngine;
 using Newtonsoft.Json;
 
@@ -82,17 +82,19 @@ public partial class MainClass : MelonMod
         AlbumInteractionItems.name = "AlbumInteractionItems";
         GameObject.DontDestroyOnLoad(AlbumInteractionItems);
 
-        friendButton = GameObject.Instantiate(Calls.GameObjects.Gym.LOGIC.Heinhouserproducts
+        friendButton = GameObject.Instantiate(GameObjects.Gym.INTERACTABLES
             .Telephone20REDUXspecialedition
             .SettingsScreen
-            .InteractionButton1
+            .PreReportSection
+            .FriendRequestButton
             .Button
             .GetGameObject());
         friendButton.name = "friendButton";
         friendButton.SetActive(false);
         friendButton.GetComponent<InteractionButton>().enabled = true;
-        friendButton.transform.GetChild(4).gameObject.SetActive(false);
-        GameObject buttonText = Calls.Create.NewText();
+
+        friendButton.transform.GetChild(5).gameObject.SetActive(false);
+        GameObject buttonText = Create.NewText();
         TextMeshPro textComponent = buttonText.GetComponent<TextMeshPro>();
         textComponent.alignment = TextAlignmentOptions.Center;
         Color textColor = new Color(1f, 0.98f, 0.75f); // very light slightly orangy yellow
@@ -106,7 +108,7 @@ public partial class MainClass : MelonMod
         friendButton.transform.SetParent(AlbumInteractionItems.transform);
 
         // get Gear Market large button
-        gearMarketButton = GameObject.Instantiate(Calls.GameObjects.Gym.LOGIC.Heinhouserproducts
+        gearMarketButton = GameObject.Instantiate(GameObjects.Gym.INTERACTABLES
             .Gearmarket
             .Messagescreen
             .OneButtonLayout
@@ -117,16 +119,16 @@ public partial class MainClass : MelonMod
         gearMarketButton.transform.SetParent(AlbumInteractionItems.transform);
 
         //Get the mail tube object in the gym
-        mailTubeObj = GameObject.Instantiate(Calls.GameObjects.Gym.LOGIC.Heinhouserproducts
+        mailTubeObj = GameObject.Instantiate(GameObjects.Gym.INTERACTABLES
             .Gearmarket
             .MailTube
-            .GetGameObject());
+            .GetGameObject()); 
         mailTubeObj.name = "mailTube";
         mailTubeObj.SetActive(false);
         mailTubeObj.transform.SetParent(AlbumInteractionItems.transform);
 
         // get Rock Cam "flip camera" button
-        rockCamTf = Calls.Players.GetPlayerController().gameObject.transform.GetChild(10).GetChild(2);
+        rockCamTf = Calls.Players.GetLocalPlayerController().gameObject.transform.GetChild(7).GetChild(0);
         rockCamButton = GameObject.Instantiate(rockCamTf.GetChild(2).GetChild(0).GetChild(1).GetChild(4).GetChild(0).gameObject);
         rockCamButton.name = "rockCamButton";
         rockCamButton.SetActive(false);
@@ -146,13 +148,13 @@ public partial class MainClass : MelonMod
             {
                 return;
             }
-            var playerController = Calls.Players.GetPlayerController();
+            var playerController = Calls.Players.GetLocalPlayerController();
             if (playerController is null)
             {
                 return;
             }
             rockCamPicture = null;
-            rockCamTf = playerController.gameObject.transform.GetChild(10).GetChild(2);
+            rockCamTf = playerController.gameObject.transform.GetChild(7).GetChild(0);
 
             // add a "Print photo" button to the top edge of Rock Cam
             System.Action action = () => PrintPhoto();
@@ -186,16 +188,71 @@ public partial class MainClass : MelonMod
     */
     private static void initializeGymObjects()
     {
+        GameObject gearMarket = GameObjects.Gym.INTERACTABLES
+            .Gearmarket
+            .GetGameObject();
+
         //Get the mail tube object in the gym
-        mailTube = Calls.GameObjects.Gym.LOGIC.Heinhouserproducts.Gearmarket.MailTube.GetGameObject().GetComponent<MailTube>();
+        mailTube = GameObjects.Gym.INTERACTABLES.Gearmarket.MailTube.GetGameObject().GetComponent<MailTube>();
 
         // Create a new button on the gear market for spawning pictures
         System.Action action = () => SpawnPicture();
         GameObject spawnButton = NewGearMarketButton("spawnButton", "Spawn picture", action);
-        GameObject gearMarket = Calls.GameObjects.Gym.LOGIC.Heinhouserproducts.Gearmarket.GetGameObject();
         spawnButton.transform.SetParent(gearMarket.transform);
         spawnButton.transform.localPosition = new Vector3(0.075f, 1.1f, 0.19f);
         spawnButton.transform.localRotation = Quaternion.Euler(new Vector3(270, 270, 0));
+
+        initializeMailTubeObjects();
+    }
+
+    /**
+    * <summary>
+    * Initializes the objects that are specific to the Park scene.
+    * </summary>
+    */
+    private static void initializeParkObjects()
+    {
+        GameObject scoreboard = GameObjects.Park.INTERACTABLES
+            .Toys
+            .MatchCounter
+            .Scoreboard
+            .GetGameObject();
+
+        //Copy the mail tube object that comes from the gym
+        mailTube = NewMailTube().GetComponent<MailTube>();
+        mailTube.gameObject.name = "mailTube";
+        mailTube.transform.SetParent(scoreboard.transform);
+        mailTube.transform.localPosition = new Vector3(-0.7f, 0f, 2.75f);
+        mailTube.transform.localRotation = Quaternion.Euler(new Vector3(-0.2f, -30, 0));
+
+        // Create a new button on the gear market for spawning pictures
+        System.Action action = () => SpawnPicture();
+        GameObject spawnButton = NewGearMarketButton("spawnButton", "Spawn picture", action);
+        spawnButton.transform.SetParent(scoreboard.transform);
+        spawnButton.transform.localPosition = new Vector3(-0.43f, 1.34f, 2.2f);
+        spawnButton.transform.localRotation = Quaternion.Euler(new Vector3(-90, 179.5f, 0));
+
+        initializeMailTubeObjects();
+    }
+
+    /**
+    * <summary>
+    * Initializes the objects that are specific to the FlatLand scene.
+    * </summary>
+    */
+    private static void initializeFlatLandObjects()
+    {
+        //Copy the mail tube object that comes from the gym
+        mailTube = NewMailTube().GetComponent<MailTube>();
+        mailTube.gameObject.name = "mailTube";
+        mailTube.transform.position = new Vector3(4.3f, 0f, -4f);
+        mailTube.transform.rotation = Quaternion.Euler(new Vector3(0, 70, 0));
+
+        // Create a new button on the gear market for spawning pictures
+        System.Action action = () => SpawnPicture();
+        GameObject spawnButton = NewGearMarketButton("spawnButton", "Spawn picture", action);
+        spawnButton.transform.position = new Vector3(3.8f, 1.1f, -4.12f);
+        spawnButton.transform.rotation = Quaternion.Euler(new Vector3(-90, -92, 0));
 
         initializeMailTubeObjects();
     }
@@ -235,7 +292,7 @@ public partial class MainClass : MelonMod
         pictureData.visible = !pictureData.visible;
         int pictureLayer = pictureData.visible ?
             LayerMask.NameToLayer("UI") // No collision, visible
-            : LayerMask.NameToLayer("PlayerFade"); // No collision, invisible
+            : LayerMask.NameToLayer("ScreenFade"); // No collision, invisible
         pictureData.obj.transform.GetChild(0).gameObject.layer = pictureLayer;
         pictureData.obj.transform.GetChild(1).gameObject.layer = pictureLayer;
         Transform visibilityButton = pictureData.obj.transform.GetChild(0).GetChild(0).GetChild(1);
@@ -300,50 +357,6 @@ public partial class MainClass : MelonMod
                 Log($"Deleted file: {pictureData.path}");
             }
         }
-    }
-
-    /**
-    * <summary>
-    * Initializes the objects that are specific to the Park scene.
-    * </summary>
-    */
-    private static void initializeParkObjects()
-    {
-        //Copy the mail tube object that comes from the gym
-        mailTube = NewMailTube().GetComponent<MailTube>();
-        mailTube.gameObject.name = "mailTube";
-        mailTube.transform.position = new Vector3(-13.3f, -5.88f, 4.71f);
-        mailTube.transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
-
-        // Create a new button on the gear market for spawning pictures
-        System.Action action = () => SpawnPicture();
-        GameObject spawnButton = NewGearMarketButton("spawnButton", "Spawn picture", action);
-        spawnButton.transform.position = new Vector3(-13.19f, -4.68f, 5.42f);
-        spawnButton.transform.rotation = Quaternion.Euler(new Vector3(-90, 30, 0));
-
-        initializeMailTubeObjects();
-    }
-
-    /**
-    * <summary>
-    * Initializes the objects that are specific to the FlatLand scene.
-    * </summary>
-    */
-    private static void initializeFlatLandObjects()
-    {
-        //Copy the mail tube object that comes from the gym
-        mailTube = NewMailTube().GetComponent<MailTube>();
-        mailTube.gameObject.name = "mailTube";
-        mailTube.transform.position = new Vector3(4.3f, 0f, - 4f);
-        mailTube.transform.rotation = Quaternion.Euler(new Vector3(0, 70, 0));
-
-        // Create a new button on the gear market for spawning pictures
-        System.Action action = () => SpawnPicture();
-        GameObject spawnButton = NewGearMarketButton("spawnButton", "Spawn picture", action);
-        spawnButton.transform.position = new Vector3(3.8f, 1.1f, - 4.12f);
-        spawnButton.transform.rotation = Quaternion.Euler(new Vector3(-90, -92, 0));
-
-        initializeMailTubeObjects();
     }
 
     /**
