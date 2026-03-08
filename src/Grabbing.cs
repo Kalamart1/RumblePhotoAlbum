@@ -1,6 +1,6 @@
 using MelonLoader;
 using UnityEngine;
-using RumbleModdingAPI;
+using RumbleModdingAPI.RMAPI;
 using Newtonsoft.Json.Linq;
 using System;
 using HarmonyLib;
@@ -25,7 +25,7 @@ public partial class MainClass : MelonMod
     */
     private static void InitGrabbing()
     {
-        Transform playerTr = Calls.Players.GetPlayerController().gameObject.transform.GetChild(2);
+        Transform playerTr = Calls.Players.GetLocalPlayerController().gameObject.transform.GetChild(2);
         grip[0] = false;
         grip[1] = false;
         holding[0] = false;
@@ -72,7 +72,7 @@ public partial class MainClass : MelonMod
                         // removing action buttons when holding two different pictures
                         actionButtons.SetActive(false);
                     }
-                    else
+                    else if (buttonsVisibility)
                     {
                         actionButtons.SetActive(true);
                     }
