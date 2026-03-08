@@ -36,7 +36,7 @@
     <Reference Include="UnityEngine.ImageConversionModule.dll">
       <HintPath>Z:\RUMBLE\RUMBLE_install\MelonLoader\Il2CppAssemblies\UnityEngine.ImageConversionModule.dll</HintPath>
     </Reference>
-    <Reference Include="MelonLoader, Version=0.5.7.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="MelonLoader, Version=0.7.2, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Z:\RUMBLE\RUMBLE_install\MelonLoader\net6\MelonLoader.dll</HintPath>
     </Reference>

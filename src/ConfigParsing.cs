@@ -422,6 +422,8 @@ public partial class MainClass : MelonMod
         Renderer frameRenderer = frame.GetComponent<Renderer>();
         frameRenderer.material.shader = Shader.Find("Shader Graphs/RUMBLE_Prop");
         frameRenderer.material.SetColor("_Overlay", pictureData.color);
+        frameRenderer.material.SetFloat("_Metalic", 0);
+
 
         // Create quad with the image on it
         GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
@@ -439,6 +441,7 @@ public partial class MainClass : MelonMod
         Renderer quadRenderer = quad.GetComponent<Renderer>();
         quadRenderer.material.shader = Shader.Find("Shader Graphs/RUMBLE_Prop");
         quadRenderer.material.SetTexture("_Albedo", imageTexture);
+        quadRenderer.material.SetFloat("_Metalic", 0);
 
         // Make the picture interactable
         pictureData.obj = obj;

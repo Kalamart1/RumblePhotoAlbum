@@ -1,3 +1,7 @@
+# Version 1.3.1
+- Fixed metallic aspect
+- Added requirement for MelonLoader 0.7.2
+
 # Version 1.3.0
 - Fixed the mod for v0.5.0.1
 
