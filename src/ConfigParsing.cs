@@ -422,7 +422,7 @@ public partial class MainClass : MelonMod
         Renderer frameRenderer = frame.GetComponent<Renderer>();
         frameRenderer.material.shader = Shader.Find("Shader Graphs/RUMBLE_Prop");
         frameRenderer.material.SetColor("_Overlay", pictureData.color);
-        frameRenderer.material.SetFloat("_Metalic", 0);
+        frameRenderer.material.SetFloat("_Metalic", pictureData.metallic);
 
 
         // Create quad with the image on it

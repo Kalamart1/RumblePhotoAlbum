@@ -1,5 +1,6 @@
 # Version 1.3.1
 - Fixed metallic aspect
+- Added option to configure the metallic aspect of the frame
 - Added requirement for MelonLoader 0.7.2
 
 # Version 1.3.0

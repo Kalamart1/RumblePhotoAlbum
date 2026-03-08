@@ -62,6 +62,8 @@ Many aspects of the frames can be customized via ModUI or by editing the config.
 
 - **Frame thickness:** global thickness can be set in ModUI. To change for any specific picture, add the field **"thickness"** to the json configuration of the picture.
 
+- **Frame metallicness:** global metallicness can be set in ModUI. To change for any specific picture, add the field **"metallic"** to the json configuration of the picture.
+
 - **Default picture size:** This only affects the initial size of a newly spawned picture, and can be changed via ModUI. You can resize a picture either by grabbing it or by adding the field **width** or **"height"** to the json configuration of the picture.
 
 - **Transparency:** transparency is disabled by default because it's not very optimized, and makes a small lag spike when creating the picture. You can enable it globally via ModUI, but to enable it for any specific picture, add the field **"alpha": true** to the json configuration of the picture.
@@ -88,7 +90,7 @@ The class `PhotoAPI` contains the API methods. It is currently pretty simple, wi
 
 ### PhotoAPI.CreatePicture
 ```cs
-public static PictureData CreatePicture(string path, Vector3 position, Vector3 rotation, float width = 0, float height = 0, float? padding = null, float? thickness = null, Color? color = null, bool? alpha = null);
+public static PictureData CreatePicture(string path, Vector3 position, Vector3 rotation, float width = 0, float height = 0, float? padding = null, float? thickness = null, float? metallic = null, Color? color = null, bool? alpha = null);
 ```
 This method can be used by an outside mod in order to create a picture. A bunch of things can be customized, but they are all optional. The only mandatory arguments are the path, the position and the rotation of the picture. The rest can be added as named arguments, for example `color: Color.black`.
 

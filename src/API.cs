@@ -36,7 +36,7 @@ public class PhotoAPI : MainClass
     * </summary>
     */
     public static PictureData CreatePicture(string path, Vector3 position, Vector3 rotation,
-        float width = 0, float height = 0, float? padding = null, float? thickness = null, Color? color = null, bool? alpha = null)
+        float width = 0, float height = 0, float? padding = null, float? thickness = null, float? metallic = null, Color? color = null, bool? alpha = null)
     {
         PictureData pictureData = new PictureData
         {
@@ -47,6 +47,7 @@ public class PhotoAPI : MainClass
             height = width,
             padding = padding ?? defaultPadding,
             thickness = thickness ?? defaultThickness,
+            metallic = metallic ?? defaultMetallicness,
             color = color ?? defaultColor,
             alpha = alpha ?? enableAlpha
         };

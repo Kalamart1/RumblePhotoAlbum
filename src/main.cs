@@ -33,6 +33,7 @@ public partial class MainClass : MelonMod
         public float height = 0;
         public float padding = defaultPadding;
         public float thickness = defaultThickness;
+        public float metallic = defaultMetallicness;
         public Color color = defaultColor;
         public bool alpha = false;
         public bool visible = true;
@@ -45,6 +46,7 @@ public partial class MainClass : MelonMod
     // variables
     protected static float defaultSize = 0.5f; // Default size of the frame (width or height depending on the orientation)
     protected static float defaultThickness = 0.01f; // Default thickness of the frame
+    protected static float defaultMetallicness = 0; // Default metallicness of the frame
     protected static float defaultPadding = 0.01f; // Default frame padding around the picture
     protected static Color defaultColor = new Color(0.48f, 0.80f, 0.76f); // Rumble gym green as default frame color
     protected static bool enableAlpha = false; // Whether to enable alpha transparency for all pictures

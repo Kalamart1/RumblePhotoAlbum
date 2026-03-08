@@ -501,6 +501,7 @@ public partial class MainClass : MelonMod
         // The spawned picture will use the default size and color
         rockCamPicture.padding = defaultPadding;
         rockCamPicture.thickness = defaultThickness;
+        rockCamPicture.metallic = defaultMetallicness;
         rockCamPicture.color = defaultColor;
 
         // Create the json object that will be used to save the config
@@ -565,6 +566,7 @@ public partial class MainClass : MelonMod
         // The spawned picture will use the default size and color
         mailTubePicture.padding = defaultPadding;
         mailTubePicture.thickness = defaultThickness;
+        mailTubePicture.metallic = defaultMetallicness;
         mailTubePicture.color = defaultColor;
         mailTubePicture.rotation = new Vector3(0, 180, 0);
 
