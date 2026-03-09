@@ -24,6 +24,8 @@ public partial class MainClass : MelonMod
     private static GameObject gearMarketButton = null;
     private static GameObject mailTubeObj = null;
     private static GameObject rockCamButton = null;
+    private static GameObject spawnButton = null;
+    private static GameObject printButton = null;
     private static Transform rockCamTf = null;
     private static GameObject rockCamHandle = null;
     private static PictureData rockCamPicture = null;
@@ -158,7 +160,7 @@ public partial class MainClass : MelonMod
 
             // add a "Print photo" button to the top edge of Rock Cam
             System.Action action = () => PrintPhoto();
-            GameObject printButton = NewRockCamButton("printButton", "Print photo", action);
+            printButton = NewRockCamButton("printButton", "Print photo", action);
             printButton.transform.SetParent(rockCamTf.GetChild(2).GetChild(0), true);
             printButton.transform.localPosition = new Vector3(-0.08f, 0.034f, 0.143f);
             printButton.transform.localRotation = Quaternion.Euler(new Vector3(90f, 0, 0));
@@ -197,7 +199,7 @@ public partial class MainClass : MelonMod
 
         // Create a new button on the gear market for spawning pictures
         System.Action action = () => SpawnPicture();
-        GameObject spawnButton = NewGearMarketButton("spawnButton", "Spawn picture", action);
+        spawnButton = NewGearMarketButton("spawnButton", "Spawn picture", action);
         spawnButton.transform.SetParent(gearMarket.transform);
         spawnButton.transform.localPosition = new Vector3(0.075f, 1.1f, 0.19f);
         spawnButton.transform.localRotation = Quaternion.Euler(new Vector3(270, 270, 0));
@@ -227,7 +229,7 @@ public partial class MainClass : MelonMod
 
         // Create a new button on the gear market for spawning pictures
         System.Action action = () => SpawnPicture();
-        GameObject spawnButton = NewGearMarketButton("spawnButton", "Spawn picture", action);
+        spawnButton = NewGearMarketButton("spawnButton", "Spawn picture", action);
         spawnButton.transform.SetParent(scoreboard.transform);
         spawnButton.transform.localPosition = new Vector3(-0.43f, 1.34f, 2.2f);
         spawnButton.transform.localRotation = Quaternion.Euler(new Vector3(-90, 179.5f, 0));
@@ -250,7 +252,7 @@ public partial class MainClass : MelonMod
 
         // Create a new button on the gear market for spawning pictures
         System.Action action = () => SpawnPicture();
-        GameObject spawnButton = NewGearMarketButton("spawnButton", "Spawn picture", action);
+        spawnButton = NewGearMarketButton("spawnButton", "Spawn picture", action);
         spawnButton.transform.position = new Vector3(3.8f, 1.1f, -4.12f);
         spawnButton.transform.rotation = Quaternion.Euler(new Vector3(-90, -92, 0));
 
@@ -406,7 +408,7 @@ public partial class MainClass : MelonMod
     {
         // Copy the object that we saved to DontDestroyOnLoad earlier
         GameObject newMailTube = GameObject.Instantiate(mailTubeObj);
-        newMailTube.SetActive(true);
+        newMailTube.SetActive(modEnabled);
         return newMailTube;
     }
 
@@ -419,7 +421,7 @@ public partial class MainClass : MelonMod
     {
         // Copy the object that we saved to DontDestroyOnLoad earlier
         GameObject newButton = GameObject.Instantiate(gearMarketButton);
-        newButton.SetActive(true);
+        newButton.SetActive(modEnabled);
         newButton.name = name;
         // onEndInteraction is the moment you release the button
         newButton.transform.GetChild(0).gameObject.GetComponent<InteractionTouch>().onEndInteraction.AddListener(action);
@@ -438,7 +440,7 @@ public partial class MainClass : MelonMod
     {
         // Copy the object that we saved to DontDestroyOnLoad earlier
         GameObject newButton = GameObject.Instantiate(rockCamButton);
-        newButton.SetActive(true);
+        newButton.SetActive(modEnabled);
         newButton.name = name;
         newButton.GetComponent<InteractionButton>().onPressed.AddListener(action);
         TextMeshPro buttonText = newButton.transform.GetChild(1).gameObject.GetComponent<TextMeshPro>();

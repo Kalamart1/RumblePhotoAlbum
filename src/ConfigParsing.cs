@@ -55,8 +55,7 @@ public partial class MainClass : MelonMod
     */
     private static IEnumerator<WaitForSeconds> LoadAlbum(string sceneName)
     {
-
-        if (!shouldLoadAlbum)
+        if (!modEnabled)
         {
             Log($"Loading disabled");
             yield break;

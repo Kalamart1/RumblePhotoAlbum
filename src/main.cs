@@ -52,7 +52,7 @@ public partial class MainClass : MelonMod
 
     protected static float grabThreshold = 0.6f;
     protected static float releaseThreshold = 0.4f;
-    protected static bool shouldLoadAlbum = true;
+    protected static bool modEnabled = true;
     
     protected static bool enableAlpha = false; // Whether to enable alpha transparency for all pictures
     protected static bool visibility = true; // Whether the pictures are visible in cameras
@@ -189,7 +189,7 @@ public partial class MainClass : MelonMod
      */
     public override void OnFixedUpdate()
     {
-        if (currentScene != "Loader")
+        if (modEnabled && (currentScene != "Loader"))
         {
             try
             {
@@ -209,7 +209,7 @@ public partial class MainClass : MelonMod
      */
     public override void OnUpdate()
     {
-        if (currentScene != "Loader")
+        if (modEnabled && (currentScene != "Loader"))
         {
             try
             {
