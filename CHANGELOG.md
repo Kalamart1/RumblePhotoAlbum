@@ -1,3 +1,8 @@
+# Version 1.3.2
+- Changed serialization method for compatibility
+- Added options to change grab/release thresholds
+- Added option to completely disable the mod
+
 # Version 1.3.1
 - Fixed metallic aspect
 - Added option to configure the metallic aspect of the frame

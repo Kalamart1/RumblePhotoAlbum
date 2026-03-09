@@ -76,6 +76,12 @@ Many aspects of the frames can be customized via ModUI or by editing the config.
 
 - **GIF speed:** change the speed of GIF playback. Whether to make it faster or slower, this will affect all gifs at once. But there is a hardcoded limit of 0.001s between two frames.
 
+- **Grab Threshold:** change how strongly one needs to grip the controller triggers in order for the grab to register.
+
+- **Release Threshold:** change how strongly one needs to grip the controller triggers in order for the grab to be released
+
+- **Enable mod:** if set to false, all of the mod's functionalities are disabled.
+
 ## Reloading all the pictures currently in the scene
 Any time the mod configuration in ModUI is saved, all the pictures are reloaded.
 
