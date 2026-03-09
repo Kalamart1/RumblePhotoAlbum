@@ -2,6 +2,7 @@
 - Changed serialization method for compatibility
 - Added options to change grab/release thresholds
 - Added option to completely disable the mod
+- Changed the stash reload function to prioritize recently added pictures
 
 # Version 1.3.1
 - Fixed metallic aspect

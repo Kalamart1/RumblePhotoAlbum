@@ -215,17 +215,19 @@ public partial class MainClass : MelonMod
                 : Enumerable.Empty<string>()
         );
 
+        var cleanedStashArray = new JArray(cleanedStash);
+
         foreach (var file in imageFiles)
         {
             string fileName = Path.GetFileName(file);
             if (!usedImages.Contains(fileName))
             {
-                cleanedStash.Add(fileName);
+                cleanedStashArray.Insert(0, fileName);
             }
         }
 
         // Rebuild updated stash/album
-        sceneObj["stash"] = new JArray(cleanedStash);
+        sceneObj["stash"] = cleanedStashArray;
     }
 
     /**
