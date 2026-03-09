@@ -105,20 +105,25 @@ public partial class MainClass : MelonMod
     * and updates the grip status accordingly.
     * </summary>
     */
-    private static bool CheckIfGripChanged(int index)
+    private static bool CheckIfGripChanged(int index) 
     {
-        bool grip_new = false;
+        // The threshold for what is considered "gripping" is set
+        // depending on whether the player was "gripping" last tick
+        float threshold = grip[index] ? releaseThreshold : grabThreshold;
+
         // consider the grip active if either the trigger or
-        // the grip is pressed on the controller
+        // the grip is pressed on the controller enough
+        // to surpass the previously set threshold 
+        bool grip_new = false;
         if (index == 0)
         {
-            grip_new = (Calls.ControllerMap.LeftController.GetTrigger() > 0.5f ||
-                Calls.ControllerMap.LeftController.GetGrip() > 0.5f);
+            grip_new = (Calls.ControllerMap.LeftController.GetTrigger() > threshold ||
+                Calls.ControllerMap.LeftController.GetGrip() > threshold);
         }
         else if (index == 1)
         {
-            grip_new = (Calls.ControllerMap.RightController.GetTrigger() > 0.5f ||
-                Calls.ControllerMap.RightController.GetGrip() > 0.5f);
+            grip_new = (Calls.ControllerMap.RightController.GetTrigger() > threshold ||
+                Calls.ControllerMap.RightController.GetGrip() > threshold);
         }
 
         bool gripChanged = (grip_new != grip[index]);

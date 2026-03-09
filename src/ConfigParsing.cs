@@ -55,6 +55,12 @@ public partial class MainClass : MelonMod
     */
     private static IEnumerator<WaitForSeconds> LoadAlbum(string sceneName)
     {
+        if (!modEnabled)
+        {
+            Log($"Loading disabled");
+            yield break;
+        }
+        
         Log($"Reading from disk");
         gifsLoading = false;
         PicturesList = new List<PictureData>();
